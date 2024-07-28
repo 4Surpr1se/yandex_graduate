@@ -1,10 +1,2 @@
 venv/
-__pycache__/main.cpython-310.pyc
-src/__pycache__/main.cpython-310.pyc
-src/api/v1/__pycache__/films.cpython-310.pyc
-src/core/__pycache__/config.cpython-310.pyc
-src/core/__pycache__/logger.cpython-310.pyc
-src/db/__pycache__/elastic.cpython-310.pyc
-src/db/__pycache__/redis.cpython-310.pyc
-src/services/__pycache__/film.cpython-310.pyc
-src/models/__pycache__/film.cpython-310.pyc
+*.cpython-310.pyc
