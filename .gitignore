@@ -1,2 +1,3 @@
 venv/
 *.cpython-310.pyc
+movies_database_dump.sql
