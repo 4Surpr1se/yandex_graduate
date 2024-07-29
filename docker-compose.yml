@@ -11,17 +11,21 @@ services:
       - "5432:5432"
     volumes:
       - ./pgdata:/var/lib/postgresql/data
-      - movies_database_dump.sql:/docker-entrypoint-initdb.d/dump.sql
+      - ./movies_database_dump.sql:/docker-entrypoint-initdb.d/dump.sql
     restart: always
 
   backend:
     build: src
-    expose:
-      - "8000"
+    ports:
+      - "80:80"
     env_file: 
       - .env
     depends_on:
       - database
+    restart: always
+
+  redis:
+    image: redis:latest
     restart: always
 
   elasticsearch:
@@ -40,7 +44,7 @@ services:
     depends_on:
       - database
       - elasticsearch
-    restart: always
+    #restart: always
 
 volumes:
   esdata:
