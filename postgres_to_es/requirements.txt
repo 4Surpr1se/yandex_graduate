@@ -1,0 +1,11 @@
+annotated-types==0.7.0
+certifi==2024.7.4
+elastic-transport==8.13.1
+elasticsearch==8.14.0
+psycopg2==2.9.9
+pydantic==2.8.2
+pydantic-settings==2.3.4
+pydantic_core==2.20.1
+python-dotenv==1.0.1
+typing_extensions==4.12.2
+urllib3==2.2.2
