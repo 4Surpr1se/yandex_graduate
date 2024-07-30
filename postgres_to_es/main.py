@@ -4,7 +4,7 @@ from backoff_decorator import backoff
 from transform import transform_data
 from extract import get_updated_film_ids, get_films_with_updated_genre, get_films_with_updated_persons
 from pg_connection import create_pg_connection
-from elasticsearch_client import create_es_connection, upload_data
+from elasticsearch_client import create_es_connection, upload_data, create_index
 from state_manager import get_state, update_state
 from psycopg2 import extras
 from settings import settings
@@ -18,6 +18,9 @@ def process_updates():
         conn = create_pg_connection()
         cursor = conn.cursor(cursor_factory=extras.DictCursor)
         
+        if not es.indices.exists(index='movies'):
+            create_index(es)
+        
         state_dict = get_state()
         last_film_date = state_dict['last_film_date']
         last_genre_date = state_dict['last_genre_date']
@@ -29,6 +32,7 @@ def process_updates():
             update_state(last_film_date=last_film_date)
             if (last_genre_date == DEFAULT_DATE) and (last_person_date == DEFAULT_DATE):
                 # после первой обработки всех фильмов считаем все данные обработанными
+                logger.info("Initial run complete")
                 update_state(last_genre_date=last_film_date, last_person_date=last_film_date)
         else:
             films = get_films_with_updated_genre(cursor, last_genre_date, settings.batch_size)
