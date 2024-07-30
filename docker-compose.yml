@@ -7,8 +7,9 @@ services:
       POSTGRES_USER: app
       POSTGRES_PASSWORD: 123qwe
       POSTGRES_DB: movies_database
-    ports:
-      - "5432:5432"
+    # only for debug
+    #ports:
+    #  - "5432:5432"
     volumes:
       - ./pgdata:/var/lib/postgresql/data
       - ./movies_database_dump.sql:/docker-entrypoint-initdb.d/dump.sql
@@ -33,6 +34,9 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
+    # only for debug
+    # ports:
+    #  - "9200:9200"
     volumes:
       - esdata:/usr/share/elasticsearch/data
     restart: always
@@ -44,7 +48,10 @@ services:
     depends_on:
       - database
       - elasticsearch
-    #restart: always
+    volumes:
+      - ./state.json:/app/state.json
+      - ./logs:/app/logs
+    restart: always
 
 volumes:
   esdata:
