@@ -26,8 +26,8 @@ def get_genres_by_filmid(cursor, film_ids: tuple):
         logger.info("Try get_genres_by_filmid")
         ids_str = ','.join(f"'{id}'" for id in film_ids)
         query = f"""
-                SELECT g.id, name, description, film_work_id FROM content.genre as g
-                INNER JOIN content.genre_film_work ON film_work_id=g.id
+                SELECT g.id,  name, description, film_work_id FROM content.genre as g
+                INNER JOIN content.genre_film_work ON genre_id=g.id
                 WHERE film_work_id IN ({ids_str})
         """
         cursor.execute(query)
