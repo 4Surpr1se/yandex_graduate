@@ -44,6 +44,7 @@ class FilmsService:
         try:
             page_size = int(query_params.get('page_size', 50))
             page_number = int(query_params.get('page_number', 1))
+            genre_id = query_params.get('genre')
             body = {
                 'sort': [
                     {
@@ -52,6 +53,18 @@ class FilmsService:
                 ],
                 'size': page_size,
                 'from': (page_number - 1) * page_size,
+                'query': {
+                    'nested': {
+                        'path': 'genres',
+                        'query': {
+                            'bool': {
+                                'must': [
+                                    {'match': {'genres.id': genre_id}}
+                                ]
+                            }
+                        }
+                    }
+                } if genre_id else {'match_all': {}}
             }
             res = await self.elastic.search(index='movies', body=body)
             hits = res['hits']['hits']
