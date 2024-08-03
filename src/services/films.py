@@ -31,7 +31,7 @@ class FilmsService:
         self.elastic = elastic
 
     async def get_films(self, query_params: QueryParams) -> Optional[Films]:
-        cache = self._generate_cache('films', query_params)
+        cache = self._generate_cache(query_params)
         films = await self._get_films_from_cache(cache)
         if not films:
             films = await self._get_films_from_elastic(query_params)
@@ -42,30 +42,7 @@ class FilmsService:
 
     async def _get_films_from_elastic(self, query_params: QueryParams) -> Optional[Films]:
         try:
-            page_size = int(query_params.get('page_size', 50))
-            page_number = int(query_params.get('page_number', 1))
-            genre_id = query_params.get('genre')
-            body = {
-                'sort': [
-                    {
-                        'imdb_rating': {'order': 'desc' if query_params.get('sort', '-imdb_rating') == '-imdb_rating' else 'asc'},
-                    }
-                ],
-                'size': page_size,
-                'from': (page_number - 1) * page_size,
-                'query': {
-                    'nested': {
-                        'path': 'genres',
-                        'query': {
-                            'bool': {
-                                'must': [
-                                    {'match': {'genres.id': genre_id}}
-                                ]
-                            }
-                        }
-                    }
-                } if genre_id else {'match_all': {}}
-            }
+            body = self._generate_body(query_params)
             res = await self.elastic.search(index='movies', body=body)
             hits = res['hits']['hits']
             films = [Film(id=hit['_id'], title=hit['_source']['title'],
@@ -83,10 +60,41 @@ class FilmsService:
     async def _put_films_to_cache(self, cache: str, films: Films):
         await self.redis.set(cache, films.json(), FILMS_CACHE_EXPIRE_IN_SECONDS)
 
-    def _generate_cache(self, path: str, query_params: QueryParams) -> str:
+    def _path_for_cache(self):
+        return 'films'
+
+    def _generate_cache(self, query_params: QueryParams) -> str:
         query_str = json.dumps(sorted(query_params.items()))
+        path = self._path_for_cache()
         key = f'{path}:{query_str}'
         return hashlib.sha256(key.encode()).hexdigest()
+
+    def _generate_body(self, query_params: QueryParams) -> dict:
+        page_size = int(query_params.get('page_size', 50))
+        page_number = int(query_params.get('page_number', 1))
+        genre_id = query_params.get('genre')
+        body = {
+            'sort': [
+                {
+                    'imdb_rating': {'order': 'desc' if query_params.get('sort', '-imdb_rating') == '-imdb_rating' else 'asc'},
+                }
+            ],
+            'size': page_size,
+            'from': (page_number - 1) * page_size,
+            'query': {
+                'nested': {
+                    'path': 'genres',
+                    'query': {
+                        'bool': {
+                            'must': [
+                                {'match': {'genres.id': genre_id}}
+                            ]
+                        }
+                    }
+                }
+            } if genre_id else {'match_all': {}}
+        }
+        return body
 
 
 @lru_cache()
