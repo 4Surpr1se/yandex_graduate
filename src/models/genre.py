@@ -2,10 +2,10 @@ from pydantic import BaseModel, UUID4, Field
 from typing import Optional
 
 
-class GenreInFilm(BaseModel):
-    uuid: UUID4 = Field(alias="id")
+class GenreBase(BaseModel):
+    uuid: UUID4
     name: str
 
 
-class Genre(GenreInFilm):
+class Genre(GenreBase):
     description: Optional[str] = None
