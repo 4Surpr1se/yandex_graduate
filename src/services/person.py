@@ -87,7 +87,7 @@ class PersonService:
                 films.append(Film(uuid=hit['_id'],
                                   title=hit['_source']['title'],
                                   imdb_rating=hit['_source']['imdb_rating'],
-                                  ))
+                                  roles=roles))
             return films
         except NotFoundError:
             logging.error(f"Films not found for person id: {person_id}")

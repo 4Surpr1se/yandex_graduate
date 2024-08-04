@@ -1,11 +1,18 @@
 from http import HTTPStatus
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
-from models.person import Person, Film
+from pydantic import BaseModel, UUID4
+from models.person import Person
 from services.person import PersonService, get_person_service
 import logging
 
 router = APIRouter()
+
+
+class Film(BaseModel):
+    uuid: UUID4
+    title: str
+    imdb_rating: float
 
 
 @router.get("/search", response_model=List[Person])
@@ -23,7 +30,8 @@ async def search_persons(
 
 
 @router.get("/{uuid}", response_model=Person)
-async def get_person(uuid: str, person_service: PersonService = Depends(get_person_service)) -> Person:
+async def get_person(uuid: str, person_service: PersonService = Depends(get_person_service)
+                     ) -> Person:
     logging.info(f"API call: get_person with uuid={uuid}")
     person = await person_service.get_person_by_id(uuid)
     if person is None:
