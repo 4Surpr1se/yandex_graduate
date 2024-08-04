@@ -1,4 +1,6 @@
-from enrich import get_films_by_id, get_genres_by_filmid, get_persons_by_filmid
+from enrich import (get_films_by_id, get_films_by_personid,
+                    get_genres_by_filmid, get_persons_by_filmid,
+                    get_persons_by_personid)
 from logger import logger
 
 
@@ -62,6 +64,38 @@ def transform_data(cursor, film_ids_list):
                 film_data['actors'] = person_dict['actor'][film_id]
 
             transformed_data.append(film_data)
+    except Exception as e:
+        logger.error('Error transforming data: %s', e)
+        transformed_data = []
+
+    return transformed_data
+
+
+def transform_persons_data(cursor, person_ids_list):
+    try:
+        persons = get_persons_by_personid(cursor, tuple(person_ids_list))
+        films = get_films_by_personid(cursor, tuple(person_ids_list))
+
+        films_dict = {}
+        for film in films:
+            person_id = film['id']
+            film_work_id = film['film_work_id']
+            if person_id not in films_dict:
+                films_dict[person_id] = {}
+            if film_work_id not in films_dict[person_id]:
+                films_dict[person_id][film_work_id] = []
+            films_dict[person_id][film_work_id].append(film['role'])
+
+        transformed_data = []
+        for person in persons:
+            person_id = person['id']
+            person_data = {
+                'id': person_id,
+                'full_name': person['full_name'],
+                'films': [{'id': uuid, 'roles': roles}
+                          for uuid, roles in films_dict[person_id].items()]
+            }
+            transformed_data.append(person_data)
     except Exception as e:
         logger.error('Error transforming data: %s', e)
         transformed_data = []
