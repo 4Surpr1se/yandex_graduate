@@ -1,6 +1,7 @@
 from logger import logger
 from psycopg2.extensions import cursor as PsycopgCursor
 
+
 def get_films_by_id(cursor: PsycopgCursor, film_ids: tuple):
     try:
         logger.info("Try get_films_by_id")
@@ -19,8 +20,8 @@ def get_films_by_id(cursor: PsycopgCursor, film_ids: tuple):
     except Exception as e:
         logger.error('Error fetching data: %s', e)
         return []
-    
-    
+
+
 def get_genres_by_filmid(cursor, film_ids: tuple):
     try:
         logger.info("Try get_genres_by_filmid")
