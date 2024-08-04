@@ -1,16 +1,18 @@
 import json
 import os
 from datetime import datetime
-from logger import logger
+
 from constants import DEFAULT_DATE, STATE_FILE
+from logger import logger
+
 
 def get_state():
     state = {
         'last_film_date': DEFAULT_DATE,
         'last_genre_date': DEFAULT_DATE,
-        'last_person_date': DEFAULT_DATE
+        'last_person_date': DEFAULT_DATE,
+        'last_person_info_date': DEFAULT_DATE,
     }
-
     if not os.path.exists(STATE_FILE):
         return state
 
@@ -29,8 +31,9 @@ def get_state():
         logger.error('Error decoding JSON from state file: %s', e)
     except Exception as e:
         logger.error('Error reading state file: %s', e)
-    
+
     return state
+
 
 def serialize_date(date):
     if isinstance(date, datetime):
@@ -45,16 +48,23 @@ def serialize_date(date):
     else:
         return DEFAULT_DATE
 
-def update_state(last_film_date=None, last_genre_date=None, last_person_date=None):
+
+def update_state(last_film_date=None, last_genre_date=None,
+                 last_person_date=None, last_person_info_date=None):
     try:
         state = get_state()
-        
-        state['last_film_date'] = serialize_date(last_film_date) if last_film_date is not None else state['last_film_date']
-        state['last_genre_date'] = serialize_date(last_genre_date) if last_genre_date is not None else state['last_genre_date']
-        state['last_person_date'] = serialize_date(last_person_date) if last_person_date is not None else state['last_person_date']
+
+        state['last_film_date'] = serialize_date(
+            last_film_date) if last_film_date is not None else state['last_film_date']
+        state['last_genre_date'] = serialize_date(
+            last_genre_date) if last_genre_date is not None else state['last_genre_date']
+        state['last_person_date'] = serialize_date(
+            last_person_date) if last_person_date is not None else state['last_person_date']
+        state['last_person_info_date'] = serialize_date(
+            last_person_info_date) if last_person_info_date is not None else state['last_person_info_date']
 
         with open(STATE_FILE, 'w') as file:
             json.dump(state, file)
-            
+
     except Exception as e:
         logger.error('Error writing state file: %s', e)

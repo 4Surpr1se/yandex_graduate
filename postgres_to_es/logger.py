@@ -10,6 +10,7 @@ if not os.path.exists('logs'):
 
 handler = RotatingFileHandler('logs/etl_service.log', backupCount=5)
 handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
