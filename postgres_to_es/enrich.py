@@ -95,3 +95,21 @@ def get_films_by_personid(cursor: PsycopgCursor, person_ids: tuple):
     except Exception as e:
         logger.error('Error fetching data: %s', e)
         return []
+    
+    
+def get_genres_by_genresid(cursor: PsycopgCursor, genre_ids: tuple):
+    try:
+        logger.info("Try get_genres_by_genreid")
+        ids_str = ','.join(f"'{id}'" for id in genre_ids)
+        query = f"""
+                SELECT id, name, description FROM content.genre
+                WHERE id IN ({ids_str})
+        """
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        logger.info(
+            'Fetched %d rows for films by genres from PostgreSQL', len(rows))
+        return rows
+    except Exception as e:
+        logger.error('Error fetching data: %s', e)
+        return []

@@ -94,3 +94,24 @@ def get_updated_person_ids(cursor: PsycopgCursor, last_modified_date: datetime, 
     except Exception as e:
         logger.error('Error fetching data: %s', e)
         return []
+    
+@backoff()
+def get_updated_genres_ids(cursor: PsycopgCursor, last_modified_date: datetime, batch_size: int):
+    try:
+        logger.info("Try get_updated_genres_ids")
+        query = """
+                SELECT id, updated_at FROM content.genre 
+                WHERE updated_at > %s 
+                ORDER BY updated_at ASC 
+                LIMIT %s
+        """
+        cursor.execute(query, (last_modified_date, str(batch_size),))
+        rows = cursor.fetchall()
+        logger.info('Fetched %d rows from PostgreSQL', len(rows))
+        return rows
+    except psycopg2.InterfaceError as e:
+        logger.error('Curosor error: %s', e)
+        raise psycopg2.InterfaceError
+    except Exception as e:
+        logger.error('Error fetching data: %s', e)
+        return []

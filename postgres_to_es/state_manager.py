@@ -12,6 +12,7 @@ def get_state():
         'last_genre_date': DEFAULT_DATE,
         'last_person_date': DEFAULT_DATE,
         'last_person_info_date': DEFAULT_DATE,
+        'last_genre_info_date': DEFAULT_DATE
     }
     if not os.path.exists(STATE_FILE):
         return state
@@ -50,7 +51,7 @@ def serialize_date(date):
 
 
 def update_state(last_film_date=None, last_genre_date=None,
-                 last_person_date=None, last_person_info_date=None):
+                 last_person_date=None, last_person_info_date=None, last_genre_info_date=None):
     try:
         state = get_state()
 
@@ -62,6 +63,8 @@ def update_state(last_film_date=None, last_genre_date=None,
             last_person_date) if last_person_date is not None else state['last_person_date']
         state['last_person_info_date'] = serialize_date(
             last_person_info_date) if last_person_info_date is not None else state['last_person_info_date']
+        state['last_genre_info_date'] = serialize_date(
+            last_genre_info_date) if last_genre_info_date is not None else state['last_genre_info_date']
 
         with open(STATE_FILE, 'w') as file:
             json.dump(state, file)
