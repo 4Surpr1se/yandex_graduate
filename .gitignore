@@ -1,2 +1,7 @@
 venv/
 *.cpython-310.pyc
+movies_database_dump.sql
+logs/
+pgdata/
+state.json/
+docker-compose.override.yml
