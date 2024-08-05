@@ -136,7 +136,7 @@ def etl_pipeline():
     while True:
         try:
             process_updates_movies()
-            #process_updates_persons()
+            process_updates_persons()
             process_updates_genres()
 
             # Sleep for a minute before checking again
