@@ -1,6 +1,7 @@
 from logger import logger
 from psycopg2.extensions import cursor as PsycopgCursor
 
+
 def get_films_by_id(cursor: PsycopgCursor, film_ids: tuple):
     try:
         logger.info("Try get_films_by_id")
@@ -19,9 +20,9 @@ def get_films_by_id(cursor: PsycopgCursor, film_ids: tuple):
     except Exception as e:
         logger.error('Error fetching data: %s', e)
         return []
-    
-    
-def get_genres_by_filmid(cursor, film_ids: tuple):
+
+
+def get_genres_by_filmid(cursor: PsycopgCursor, film_ids: tuple):
     try:
         logger.info("Try get_genres_by_filmid")
         ids_str = ','.join(f"'{id}'" for id in film_ids)
@@ -51,6 +52,45 @@ def get_persons_by_filmid(cursor: PsycopgCursor, film_ids: tuple):
         cursor.execute(query)
         rows = cursor.fetchall()
         logger.info('Fetched %d rows for persons from PostgreSQL', len(rows))
+        return rows
+    except Exception as e:
+        logger.error('Error fetching data: %s', e)
+        return []
+
+
+def get_persons_by_personid(cursor: PsycopgCursor, person_ids: tuple):
+    try:
+        logger.info("Try get_persons_by_personid")
+        ids_str = ','.join(f"'{id}'" for id in person_ids)
+        query = f"""
+                SELECT id, full_name
+                FROM content.person
+                WHERE id IN ({ids_str})
+        """
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        logger.info(
+            'Fetched %d rows for persons info from PostgreSQL', len(rows))
+        return rows
+    except Exception as e:
+        logger.error('Error fetching data: %s', e)
+        return []
+
+
+def get_films_by_personid(cursor: PsycopgCursor, person_ids: tuple):
+    try:
+        logger.info("Try get_persons_by_personid")
+        ids_str = ','.join(f"'{id}'" for id in person_ids)
+        query = f"""
+                SELECT p.id, pfw.film_work_id, pfw.role
+                FROM content.person_film_work as pfw
+                INNER JOIN content.person as p ON p.id=pfw.person_id
+                WHERE p.id IN ({ids_str})
+        """
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        logger.info(
+            'Fetched %d rows for films by persons from PostgreSQL', len(rows))
         return rows
     except Exception as e:
         logger.error('Error fetching data: %s', e)
