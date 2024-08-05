@@ -1,6 +1,6 @@
 from enrich import (get_films_by_id, get_films_by_personid,
                     get_genres_by_filmid, get_persons_by_filmid,
-                    get_persons_by_personid)
+                    get_persons_by_personid, get_genres_by_genresid)
 from logger import logger
 
 
@@ -101,3 +101,23 @@ def transform_persons_data(cursor, person_ids_list):
         transformed_data = []
 
     return transformed_data
+
+
+def transform_genres_data(cursor, genres_ids_list):
+    try:
+        genres = get_genres_by_genresid(cursor, tuple(genres_ids_list))
+        
+        transformed_data = []
+        for genre in genres:
+            genre_data = {
+                'id': genre['id'],
+                'name': genre['name'],
+                'description': genre.get('description', '')
+            }
+            transformed_data.append(genre_data)
+    except Exception as e:
+        logger.error('Error transforming genre data: %s', e)
+        transformed_data = []
+    
+    return transformed_data
+

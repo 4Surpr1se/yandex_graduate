@@ -29,10 +29,10 @@ def upload_data(es, index_name, data):
         try:
             es.index(index=index_name, id=record['id'], body=record)
             logger.info(
-                'Successfully indexed/updated record with id %s', record['id'])
+                'Successfully indexed/updated record in index %s with id %s', index_name, record['id'])
         except Exception as e:
             logger.error(
-                'Error indexing/updating record with id %s: %s', record['id'], e)
+                'Error indexing/updating record in index %s with id %s: %s', index_name, record['id'], e)
 
 
 def create_index(es, index_name, body):

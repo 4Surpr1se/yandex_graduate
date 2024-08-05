@@ -6,18 +6,18 @@ from elasticsearch_client import (create_es_connection, create_index,
                                   upload_data)
 from extract import (get_films_with_updated_genre,
                      get_films_with_updated_persons, get_updated_film_ids,
-                     get_updated_person_ids)
-from indexes import body_movies, body_persons
+                     get_updated_person_ids, get_updated_genres_ids)
+from indexes import body_movies, body_persons, body_genres
 from logger import logger
 from pg_connection import create_pg_connection
 from psycopg2 import extras
 from settings import settings
 from state_manager import get_state, update_state
-from transform import transform_data, transform_persons_data
+from transform import transform_data, transform_persons_data, transform_genres_data
 
 
 @backoff()
-def process_updates():
+def process_updates_movies():
     try:
         es = create_es_connection()
         conn = create_pg_connection()
@@ -99,11 +99,45 @@ def process_updates_persons():
         cursor.close()
 
 
+@backoff()
+def process_updates_genres():
+    try:
+        while True:
+            es = create_es_connection()
+            conn = create_pg_connection()
+            cursor = conn.cursor(cursor_factory=extras.DictCursor)
+
+            if not es.indices.exists(index='genres'):
+                create_index(es, 'genres', body_genres)
+
+            state_dict = get_state()
+            last_genre_info_date = state_dict['last_genre_info_date']
+
+            genres = get_updated_genres_ids(
+                cursor, last_genre_info_date, settings.batch_size)
+
+            if genres:
+                last_genre_info_date = max(genre[1] for genre in genres)
+                update_state(last_genre_info_date=last_genre_info_date)
+                logger.info(f"Processing {len(genres)} updated genres")
+                genre_ids_list = [genre['id'] for genre in genres]
+                unique_genre_ids_list = list(set(genre_ids_list))
+                transformed_data = transform_genres_data(
+                    cursor, unique_genre_ids_list)
+                upload_data(es, 'genres', transformed_data)
+
+            else:
+                break
+
+    except Exception:
+        cursor.close()
+
 def etl_pipeline():
     while True:
         try:
-            process_updates()
-            process_updates_persons()
+            process_updates_movies()
+            #process_updates_persons()
+            process_updates_genres()
 
             # Sleep for a minute before checking again
             time.sleep(60)
