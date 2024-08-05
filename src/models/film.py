@@ -39,7 +39,7 @@ class Film(BaseModel):
     uuid: UUID4 = Field(alias='id')
     title: str
     description: Optional[str] = None
-    imdb_rating: Optional[float] = None
+    imdb_rating: Optional[float] = Field(None, ge=0, le=10)
     genres: List[GenreBase] = []
     actors: List[PersonBase] = []
     directors: List[PersonBase] = []
