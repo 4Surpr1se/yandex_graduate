@@ -1,10 +1,12 @@
+import logging
 from http import HTTPStatus
-from fastapi import APIRouter, Depends, HTTPException
 from typing import List
-from pydantic import BaseModel, UUID4
+
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import UUID4, BaseModel
+
 from models.person import Person
 from services.person import PersonService, get_person_service
-import logging
 
 router = APIRouter()
 

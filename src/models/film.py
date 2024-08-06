@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field, UUID4, model_validator
 from typing import List, Optional
+
+from pydantic import UUID4, BaseModel, Field, model_validator
 
 
 class GenreBase(BaseModel):

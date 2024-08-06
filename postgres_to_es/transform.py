@@ -1,6 +1,6 @@
 from enrich import (get_films_by_id, get_films_by_personid,
-                    get_genres_by_filmid, get_persons_by_filmid,
-                    get_persons_by_personid, get_genres_by_genresid)
+                    get_genres_by_filmid, get_genres_by_genresid,
+                    get_persons_by_filmid, get_persons_by_personid)
 from logger import logger
 
 

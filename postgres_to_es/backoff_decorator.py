@@ -1,6 +1,8 @@
 import time
 from functools import wraps
+
 from logger import logger
+
 
 def backoff(start_sleep_time=0.1, factor=2, border_sleep_time=10, max_attempts=20):
     def func_wrapper(func):

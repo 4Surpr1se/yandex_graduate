@@ -2,6 +2,7 @@ import psycopg2
 from logger import logger
 from settings import settings
 
+
 def create_pg_connection():
     try:
         conn = psycopg2.connect(

@@ -1,5 +1,6 @@
-from pydantic import BaseModel, UUID4, Field
 from typing import Optional
+
+from pydantic import UUID4, BaseModel, Field
 
 
 class GenreBase(BaseModel):

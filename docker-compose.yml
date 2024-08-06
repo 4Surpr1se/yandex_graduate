@@ -2,11 +2,9 @@ version: '3'
 services:
 
   database:
-    image: postgres
-    environment:
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: 123qwe
-      POSTGRES_DB: movies_database
+    image: postgres:16.3
+    env_file: 
+      - .env
     # only for debug
     #ports:
     #  - "5432:5432"
@@ -26,7 +24,7 @@ services:
     restart: always
 
   redis:
-    image: redis:latest
+    image: redis:7.4.0
     restart: always
 
   elasticsearch:
