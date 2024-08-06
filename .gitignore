@@ -5,3 +5,4 @@ logs/
 pgdata/
 state.json/
 docker-compose.override.yml
+.env
