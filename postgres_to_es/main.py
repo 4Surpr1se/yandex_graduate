@@ -2,15 +2,20 @@ import time
 
 from backoff_decorator import backoff
 from constants import DEFAULT_DATE
-from elasticsearch_client import (create_es_connection, create_index, upload_data)
-from extract import (get_films_with_updated_genre, get_films_with_updated_persons, get_updated_film_ids, get_updated_person_ids, get_updated_genres_ids)
-from indexes import body_movies, body_persons, body_genres
+from elasticsearch_client import (create_es_connection, create_index,
+                                  upload_data)
+from extract import (get_films_with_updated_genre,
+                     get_films_with_updated_persons, get_updated_film_ids,
+                     get_updated_genres_ids, get_updated_person_ids)
+from indexes import body_genres, body_movies, body_persons
 from logger import logger
 from pg_connection import create_pg_connection
 from psycopg2 import extras
 from settings import settings
 from state_manager import get_state, update_state
-from transform import transform_data, transform_persons_data, transform_genres_data
+from transform import (transform_data, transform_genres_data,
+                       transform_persons_data)
+
 
 def get_last_update_dates():
     state_dict = get_state()

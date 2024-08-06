@@ -1,15 +1,15 @@
+import hashlib
+import json
+import logging
 from functools import lru_cache
+from typing import List, Optional
+
 from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
-from typing import List, Optional
-import json
-import hashlib
-
-from models.person import Person, PersonFilm, Film
-from db.elastic import get_elastic
 from redis.asyncio import Redis
 
-import logging
+from db.elastic import get_elastic
+from models.person import Film, Person, PersonFilm
 
 PERSONS_CACHE_EXPIRE_IN_SECONDS=60
 

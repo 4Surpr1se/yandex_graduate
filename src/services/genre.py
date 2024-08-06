@@ -1,16 +1,16 @@
 import hashlib
 import json
+import logging
 from functools import lru_cache
 from typing import List, Optional
 
 from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
 from redis.asyncio import Redis
-import logging
 
-from models.genre import Genre
 from db.elastic import get_elastic
 from db.redis import get_redis
+from models.genre import Genre
 
 GENRES_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
