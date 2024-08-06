@@ -6,16 +6,16 @@ from fastapi.responses import ORJSONResponse
 from redis.asyncio import Redis
 
 from api.v1 import films, genres, persons
-from core.config import config
+from core.config import settings
 from db import elastic, redis
 
 
 @asynccontextmanager
-async def lifespan():
-    redis.redis = Redis(host=config.redis_host, port=config.redis_port)
+async def lifespan(app: FastAPI):
+    redis.redis = Redis(host=settings.redis_host, port=settings.redis_port)
     elastic.es = AsyncElasticsearch([{
-        'host': config.elastic_host,
-        'port': config.elastic_port,
+        'host': settings.elastic_host,
+        'port': settings.elastic_port,
         'scheme': 'http'
     }])
     yield
@@ -23,7 +23,7 @@ async def lifespan():
     await elastic.es.close()
     
 app = FastAPI(
-    title=config.config.project_name,
+    title=settings.project_name,
     docs_url='/api/openapi',
     openapi_url='/api/openapi.json',
     default_response_class=ORJSONResponse,
