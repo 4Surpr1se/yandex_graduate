@@ -2,7 +2,7 @@ from pydantic import Field
 from pydantic_settings import BaseSettings
 
 
-class ConfigSettings(BaseSettings):
+class Settings(BaseSettings):
     batch_size: int = Field(default=100, env='BATCH_SIZE')
     elasticsearch_host: str = Field(
         default='elasticsearch', env='ELASTIC_HOST')
@@ -17,4 +17,4 @@ class ConfigSettings(BaseSettings):
         extra = "ignore"
 
 
-config = ConfigSettings()
+settings = Settings()

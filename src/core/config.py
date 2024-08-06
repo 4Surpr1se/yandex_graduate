@@ -2,7 +2,7 @@ from pydantic import Field
 from pydantic_settings import BaseSettings
 
 
-class Settings(BaseSettings):
+class ConfigSettings(BaseSettings):
     elastic_host: str = Field(
         default='elasticsearch', env='ELASTIC_HOST')
     elastic_port: int = Field(default=9200, env='ELASTIC_PORT')
@@ -15,5 +15,5 @@ class Settings(BaseSettings):
         env_file = "../.env"
         extra = "ignore"
 
-config = Settings()
+config = ConfigSettings()
  
