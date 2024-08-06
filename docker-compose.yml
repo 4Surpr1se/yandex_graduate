@@ -3,10 +3,8 @@ services:
 
   database:
     image: postgres
-    environment:
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: 123qwe
-      POSTGRES_DB: movies_database
+    env_file: 
+      - .env
     # only for debug
     #ports:
     #  - "5432:5432"
