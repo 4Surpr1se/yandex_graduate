@@ -29,9 +29,8 @@ app = FastAPI(
     default_response_class=ORJSONResponse,
     lifespan=lifespan
 )
-    
 
-app.include_router(films.router, prefix='/api/v1/films', tags=['films'])
+
 app.include_router(films.router, prefix='/api/v1/films', tags=['films'])
 app.include_router(genres.router, prefix="/api/v1/genres", tags=["genres"])
 app.include_router(persons.router, prefix="/api/v1/persons", tags=["persons"])
