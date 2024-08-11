@@ -9,6 +9,7 @@ from fastapi import Depends
 from redis.asyncio import Redis
 
 from db.elastic import get_elastic
+from db.redis import get_redis
 from models.person import Film, Person, PersonFilm
 
 PERSONS_CACHE_EXPIRE_IN_SECONDS=60
@@ -146,5 +147,7 @@ class PersonService:
 
 
 @lru_cache()
-def get_person_service(elastic: AsyncElasticsearch = Depends(get_elastic)) -> PersonService:
-    return PersonService(elastic)
+def get_person_service(
+    redis: Redis = Depends(get_redis),
+    elastic: AsyncElasticsearch = Depends(get_elastic)) -> PersonService:
+    return PersonService(redis, elastic)
