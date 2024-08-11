@@ -63,13 +63,16 @@ services:
     ports:
       - "80:80"
 
-  #tests:
-  #  build: tests/functional
-  #  entrypoint: >
-  #    sh -c "pip install -r /tests/functional/requirements.txt
-  #    && python3 /tests/functional/utils/wait_for_es.py
-  #    && python3 /tests/functional/utils/wait_for_redis.py
-  #    && pytest /tests/functional/src"
+  tests:
+    build: tests/functional
+    env_file: 
+      - .env
+    entrypoint: >
+      sh -c "pip install -r requirements.txt
+      && python3 utils/wait_for_es.py
+      && python3 utils/wait_for_redis.py
+      && pytest src"
+      
 
 volumes:
   esdata:
