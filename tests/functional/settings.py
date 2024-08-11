@@ -8,12 +8,8 @@ from testdata.es_mapping import es_index_mapping
 
 class TestSettings(BaseSettings):
     es_host: str = Field('http://127.0.0.1:9200', env='ELASTIC_HOST')
+    redis_host: str = Field('http://127.0.0.1:6379', env='REDIS_HOST')
     es_index: str = 'movies_test'
-    #es_id_field: str = ...
     es_index_mapping: dict = es_index_mapping
-
-    #redis_host: str = ...
-    #service_url: str = ...
- 
 
 test_settings = TestSettings() 
