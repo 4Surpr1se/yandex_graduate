@@ -11,8 +11,8 @@ def create_es_connection():
     try:
         es = Elasticsearch(
             [{
-                'host': settings.elasticsearch_host,
-                'port': settings.elasticsearch_port,
+                'host': settings.elastic_host,
+                'port': settings.elastic_port,
                 'scheme': 'http'
             }]
         )

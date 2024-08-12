@@ -25,6 +25,8 @@ services:
 
   redis:
     image: redis:7.4.0
+    #ports:
+    #  - "6379:6379"
     restart: always
 
   elasticsearch:
@@ -33,7 +35,7 @@ services:
       - discovery.type=single-node
       - xpack.security.enabled=false
     # only for debug
-    # ports:
+    #ports:
     #  - "9200:9200"
     volumes:
       - esdata:/usr/share/elasticsearch/data
@@ -60,6 +62,17 @@ services:
       - backend
     ports:
       - "80:80"
+
+  tests:
+    build: tests/functional
+    env_file: 
+      - .env
+    entrypoint: >
+      sh -c "pip install --no-cache-dir -r requirements.txt
+      && python3 utils/wait_for_redis.py
+      && python3 utils/wait_for_es.py
+      && pytest src"
+      
 
 volumes:
   esdata:
