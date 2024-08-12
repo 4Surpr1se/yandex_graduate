@@ -41,7 +41,7 @@ async def test_search():
         data.update({'_source': row})
         bulk_query.append(data)
 
-    es_client = AsyncElasticsearch(hosts=test_settings.es_host, verify_certs=False)
+    es_client = AsyncElasticsearch(hosts=f"http://{test_settings.elastic_host}:{test_settings.elastic_port}", verify_certs=False)
     if await es_client.indices.exists(index=test_settings.es_index):
         await es_client.indices.delete(index=test_settings.es_index)
     await es_client.indices.create(index=test_settings.es_index, **test_settings.es_index_mapping)

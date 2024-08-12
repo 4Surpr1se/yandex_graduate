@@ -68,9 +68,9 @@ services:
     env_file: 
       - .env
     entrypoint: >
-      sh -c "pip install -r requirements.txt
-      && python3 utils/wait_for_es.py
+      sh -c "pip install --no-cache-dir -r requirements.txt
       && python3 utils/wait_for_redis.py
+      && python3 utils/wait_for_es.py
       && pytest src"
       
 
