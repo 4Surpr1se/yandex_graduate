@@ -3,20 +3,20 @@ import json
 from functools import lru_cache
 from typing import List, Optional
 
-from elasticsearch import AsyncElasticsearch, NotFoundError
+from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 from fastapi.datastructures import QueryParams
 from pydantic import BaseModel, RootModel
 from redis.asyncio import Redis
 
-from db.elastic import get_elastic
+from db.elastic import ElasticInter, get_elastic
 from db.redis import get_redis
 
 FILMS_CACHE_EXPIRE_IN_SECONDS = int(60 * 0.5)
 
 
 class Film(BaseModel):
-    id: str
+    uuid: str
     title: str
     imdb_rating: float
 
@@ -25,10 +25,11 @@ class Films(RootModel):
     root: List[Film]
 
 
-class FilmsService:
+class FilmsService(ElasticInter):
     def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
         self.redis = redis
         self.elastic = elastic
+        self.index = 'movies'
 
     async def get_films(self, query_params: QueryParams) -> Optional[Films]:
         cache = self._generate_cache(query_params)
@@ -40,16 +41,12 @@ class FilmsService:
             await self._put_films_to_cache(cache, films)
         return films
 
-    async def _get_films_from_elastic(self, query_params: QueryParams) -> Optional[Films]:
-        try:
-            body = self._generate_body(query_params)
-            res = await self.elastic.search(index='movies', body=body)
-            hits = res['hits']['hits']
-            films = [Film(id=hit['_id'], title=hit['_source']['title'],
-                          imdb_rating=hit['_source']['imdb_rating']) for hit in hits]
-        except NotFoundError:
-            return None
-        return Films(root=films)
+    async def _get_films_from_elastic(self, query_params: QueryParams, **args) -> Optional[Films]:
+        body = self._generate_body(query_params, **args)
+        hits = await self._get_hits_from_elastic(body)
+        films = [Film(uuid=hit['_id'], title=hit['_source']['title'],
+                      imdb_rating=hit['_source']['imdb_rating']) for hit in hits]
+        return Films(root=films) if films else None
 
     async def _get_films_from_cache(self, cache: str) -> Optional[Films]:
         films = await self.redis.get(cache)
