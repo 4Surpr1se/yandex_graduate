@@ -21,7 +21,8 @@ async def lifespan(app: FastAPI):
     yield
     await redis.redis.close()
     await elastic.es.close()
-    
+
+
 app = FastAPI(
     title=settings.project_name,
     docs_url='/api/openapi',

@@ -4,8 +4,8 @@ from pydantic import UUID4, BaseModel, Field, model_validator
 
 
 class GenreBase(BaseModel):
-    uuid: UUID4 = Field(alias='id')
-    full_name: str = Field(alias='name')
+    uuid: UUID4
+    full_name: str
 
     @model_validator(mode='before')
     @classmethod
@@ -19,9 +19,10 @@ class GenreBase(BaseModel):
     class Config:
         populate_by_name = True
 
+
 class PersonBase(BaseModel):
-    uuid: UUID4 = Field(alias='id')
-    full_name: str = Field(alias='name')
+    uuid: UUID4
+    full_name: str
 
     @model_validator(mode='before')
     @classmethod
@@ -37,7 +38,7 @@ class PersonBase(BaseModel):
 
 
 class Film(BaseModel):
-    uuid: UUID4 = Field(alias='id')
+    uuid: UUID4
     title: str
     description: Optional[str] = None
     imdb_rating: Optional[float] = Field(None, ge=0, le=10)

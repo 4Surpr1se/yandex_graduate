@@ -8,16 +8,18 @@ from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
 from redis.asyncio import Redis
 
-from db.elastic import get_elastic
+from db.elastic import ElasticInter, get_elastic
 from db.redis import get_redis
 from models.genre import Genre
 
 GENRES_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
-class GenreService:
+
+class GenreService(ElasticInter):
     def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
         self.redis = redis
         self.elastic = elastic
+        self.index = 'genres'
 
     async def get_all_genres(self) -> List[Genre]:
         cache_key = self._generate_cache_key('get_all_genres')
@@ -30,15 +32,17 @@ class GenreService:
         return genres
 
     async def _get_all_genres_from_elastic(self) -> List[Genre]:
-        try:
-            res = await self.elastic.search(index="genres", body={"query": {"match_all": {}}})
-            genres = [Genre(uuid=hit['_id'], name=hit['_source']['name']) for hit in res['hits']['hits']]
-            return genres
-        except NotFoundError:
-            return []
+        body = {"query": {"match_all": {}}}
+        hits = await self._get_hits_from_elastic(body)
+        genres = [Genre(uuid=hit['_id'],
+                        name=hit['_source']['name'],
+                        description=hit['_source']['description'])
+                  for hit in hits]
+        return genres or None
 
     async def get_genre_by_id(self, genre_id: str) -> Optional[Genre]:
-        cache_key = self._generate_cache_key('get_genre_by_id', genre_id=genre_id)
+        cache_key = self._generate_cache_key(
+            'get_genre_by_id', genre_id=genre_id)
         genre = await self._get_genre_from_cache(cache_key)
         if not genre:
             genre = await self._get_genre_by_id_from_elastic(genre_id)
@@ -48,11 +52,10 @@ class GenreService:
         return genre
 
     async def _get_genre_by_id_from_elastic(self, genre_id: str) -> Optional[Genre]:
-        try:
-            res = await self.elastic.get(index="genres", id=genre_id)
-            return Genre(uuid=res['_id'], name=res['_source']['name'])
-        except NotFoundError:
-            return None
+        genre = await self._get_by_id_from_elastic(genre_id)
+        return Genre(uuid=genre['id'],
+                     name=genre['name'],
+                     description=genre['description']) if genre else None
 
     def _generate_cache_key(self, method: str, **kwargs) -> str:
         query_str = json.dumps(kwargs, sort_keys=True)

@@ -1,6 +1,6 @@
 from typing import List, Literal
 
-from pydantic import UUID4, BaseModel, Field
+from pydantic import UUID4, BaseModel, model_validator
 
 
 class PersonBase(BaseModel):
@@ -11,6 +11,13 @@ class PersonBase(BaseModel):
 class PersonFilm(BaseModel):
     uuid: UUID4
     roles: List[Literal['actor', 'writer', 'director']] = []
+
+    @model_validator(mode='before')
+    @classmethod
+    def rename_fields(cls, values):
+        if 'id' in values:
+            values['uuid'] = values.pop('id')
+        return values
 
 
 class Person(PersonBase):
