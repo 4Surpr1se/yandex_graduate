@@ -2,6 +2,7 @@ import pytest
 import httpx
 import sys
 import uuid
+import time
 import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -139,3 +140,31 @@ async def test_search_films(params, expected_result_count):
             assert 0 < film['imdb_rating'] <= 10
     else:
         assert len(data) == 0
+        
+
+@pytest.mark.asyncio
+async def test_search_uses_cache(redis_client):
+    params = {"query": "Star Wars", "page_size": "5", "page_number": 1}
+    redis_client.flushdb()
+    
+    async with httpx.AsyncClient() as client:
+        # first request
+        start_time = time.time()
+        response = await client.get(BASE_URL + "/search", params=params)
+        end_time = time.time()
+        
+        assert response.status_code == 200
+        initial_time = end_time - start_time
+
+        # second request
+        start_time = time.time()
+        response = await client.get(BASE_URL + "/search", params=params)
+        end_time = time.time()
+        
+        assert response.status_code == 200
+        cached_time = end_time - start_time
+
+        # second request schould be faster
+        assert cached_time < initial_time
+        print(f"Initial request time: {initial_time}, Cached request time: {cached_time}")
+
