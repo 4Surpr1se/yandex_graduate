@@ -52,51 +52,48 @@ async def test_get_films(params, expected_result_count):
     assert data[0]['imdb_rating'] >= data[1]['imdb_rating']
 
 
-@pytest.mark.asyncio
-async def get_existing_film_ids():
+@pytest.fixture(scope="module")
+async def existing_film_id():
     async with httpx.AsyncClient() as client:
-        response = await client.get(BASE_URL, params={"page_size": "2", "page_number": 1})
-        assert response.status_code == 200
-        films = response.json()
-        return [film['id'] for film in films]
+        response1 = await client.get(BASE_URL, params={"page_size": "1", "page_number": 1})
+        
+    assert response1.status_code == 200
 
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "film_id, expected_status",
-    [
-        ("2a090dde-f688-46fe-a9f4-b781a985275e", 200), 
-        ("a58961cb-0b46-49f5-8a59-20b0118f57b4", 200),
-        (str(uuid.UUID(int=0)), 404),
-    ]
-)
-
-
-async def test_get_film_by_id(film_id, expected_status):
-    url = f"{BASE_URL}/{film_id}"
+    films1 = response1.json()
     
-    print(film_id)
+    return films1[0]['id']
+
+
+async def test_get_film_by_id():
+    existing_id = existing_film_id()
+    url = f"{BASE_URL}/{existing_id}"
+    
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
     
-    assert response.status_code == expected_status
+    assert response.status_code == 200
 
-    if response.status_code == 200:
-        film = response.json()
+    film = response.json()
 
-        assert 'id' in film
-        assert 'title' in film
-        assert 'imdb_rating' in film
+    assert 'id' in film
+    assert 'title' in film
+    assert 'imdb_rating' in film
 
-        # Check id is guid
-        assert isinstance(film['id'], str)
-        assert len(film['id']) == 36
+    assert isinstance(film['id'], str)
+    assert len(film['id']) == 36
 
-        assert isinstance(film['title'], str)
-        assert len(film['title'].strip()) > 0
+    assert isinstance(film['title'], str)
+    assert len(film['title'].strip()) > 0
 
-        assert isinstance(film['imdb_rating'], (float, int))
-        assert 0 < film['imdb_rating'] <= 10
+    assert isinstance(film['imdb_rating'], (float, int))
+    assert 0 < film['imdb_rating'] <= 10
+    
+    nonexistent_id = str(uuid.uuid4())
+    url = f"{BASE_URL}/{nonexistent_id}"
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url)
+    
+    assert response.status_code == 404
 
 
 @pytest.mark.asyncio
@@ -166,5 +163,3 @@ async def test_search_uses_cache(redis_client):
 
         # second request schould be faster
         assert cached_time < initial_time
-        print(f"Initial request time: {initial_time}, Cached request time: {cached_time}")
-
