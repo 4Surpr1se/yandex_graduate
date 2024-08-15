@@ -6,13 +6,13 @@ from fastapi import Depends
 from redis.asyncio import Redis
 
 from db.elastic import ElasticInter, get_elastic
-from db.redis import get_redis
+from db.redis import RedisInter, get_redis
 from models.film import Film
 
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
 
-class FilmService(ElasticInter):
+class FilmService(ElasticInter, RedisInter):
     def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
         self.redis = redis
         self.elastic = elastic
@@ -32,16 +32,12 @@ class FilmService(ElasticInter):
         return Film(**film) if film else None
 
     async def _film_from_cache(self, film_id: str) -> Optional[Film]:
-        data = await self.redis.get(film_id)
-        if not data:
-            return None
-
-        film = Film.parse_raw(data)
-        return film
+        data = await self._get_from_cache(film_id)
+        return Film.parse_raw(data) if data else None
 
     async def _put_film_to_cache(self, film: Film):
         film_id_str = f'film:{str(film.uuid)}'
-        await self.redis.set(film_id_str, film.json(), FILM_CACHE_EXPIRE_IN_SECONDS)
+        await self._put_to_cache(film_id_str, film.json(), FILM_CACHE_EXPIRE_IN_SECONDS)
 
 
 @lru_cache()

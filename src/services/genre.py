@@ -9,13 +9,13 @@ from fastapi import Depends
 from redis.asyncio import Redis
 
 from db.elastic import ElasticInter, get_elastic
-from db.redis import get_redis
+from db.redis import RedisInter, get_redis
 from models.genre import Genre
 
 GENRES_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
 
-class GenreService(ElasticInter):
+class GenreService(ElasticInter, RedisInter):
     def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
         self.redis = redis
         self.elastic = elastic
@@ -63,22 +63,19 @@ class GenreService(ElasticInter):
         return hashlib.sha256(key.encode()).hexdigest()
 
     async def _get_genres_from_cache(self, cache_key: str) -> Optional[List[Genre]]:
-        genres = await self.redis.get(cache_key)
-        if not genres:
-            return None
-        return [Genre.parse_raw(genre) for genre in json.loads(genres)]
+        genres = await self._get_from_cache(cache_key)
+        return [Genre.parse_raw(genre) for genre in json.loads(genres)] \
+            if genres else None
 
     async def _put_genres_to_cache(self, cache_key: str, genres: List[Genre]):
-        await self.redis.set(cache_key, json.dumps([genre.json() for genre in genres]), GENRES_CACHE_EXPIRE_IN_SECONDS)
+        await self._put_to_cache(cache_key, json.dumps([genre.json() for genre in genres]), GENRES_CACHE_EXPIRE_IN_SECONDS)
 
     async def _get_genre_from_cache(self, cache_key: str) -> Optional[Genre]:
-        genre = await self.redis.get(cache_key)
-        if not genre:
-            return None
-        return Genre.parse_raw(genre)
+        genre = await self._get_from_cache(cache_key)
+        return Genre.parse_raw(genre) if genre else None
 
     async def _put_genre_to_cache(self, cache_key: str, genre: Genre):
-        await self.redis.set(cache_key, genre.json(), GENRES_CACHE_EXPIRE_IN_SECONDS)
+        await self._put_to_cache(cache_key, genre.json(), GENRES_CACHE_EXPIRE_IN_SECONDS)
 
 
 @lru_cache()
