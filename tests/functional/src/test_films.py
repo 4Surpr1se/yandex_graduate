@@ -1,11 +1,7 @@
 import pytest
 import httpx
-import sys
 import uuid
 import time
-import os
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from settings import test_settings
 
 BASE_URL = f"http://{test_settings.service_host}:{test_settings.service_port}/api/v1/films"
