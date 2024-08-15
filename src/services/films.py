@@ -43,6 +43,8 @@ class FilmsService(ElasticInter, RedisInter):
 
     async def _get_films_from_elastic(self, query_params: QueryParams, **args) -> Optional[Films]:
         body = self._generate_body(query_params, **args)
+        if not body:
+            return None
         hits = await self._get_hits_from_elastic(body)
         films = [Film(uuid=hit['_id'], title=hit['_source']['title'],
                       imdb_rating=hit['_source']['imdb_rating']) for hit in hits]

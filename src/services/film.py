@@ -33,7 +33,7 @@ class FilmService(ElasticInter, RedisInter):
 
     async def _film_from_cache(self, film_id: str) -> Optional[Film]:
         data = await self._get_from_cache(film_id)
-        return Film.parse_raw(data) if data else None
+        return Film.model_validate_json(data) if data else None
 
     async def _put_film_to_cache(self, film: Film):
         film_id_str = f'film:{str(film.uuid)}'
