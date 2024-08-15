@@ -12,11 +12,13 @@ from .films import FilmsService
 
 
 class SearchFilmsService(FilmsService):
-    def _generate_body(self, query_params: QueryParams) -> dict:
+    def _generate_body(self, query_params: QueryParams) -> dict | None:
         page_size = int(query_params.get('page_size', 50))
         page_number = int(query_params.get('page_number', 1))
         genre_id = query_params.get('genre')
         search_query = query_params.get('query')
+        if not search_query:
+            return None
         body = {
             'size': page_size,
             'from': (page_number - 1) * page_size,

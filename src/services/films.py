@@ -10,7 +10,7 @@ from pydantic import BaseModel, RootModel
 from redis.asyncio import Redis
 
 from db.elastic import ElasticInter, get_elastic
-from db.redis import get_redis
+from db.redis import RedisInter, get_redis
 
 FILMS_CACHE_EXPIRE_IN_SECONDS = int(60 * 0.5)
 
@@ -25,7 +25,7 @@ class Films(RootModel):
     root: List[Film]
 
 
-class FilmsService(ElasticInter):
+class FilmsService(ElasticInter, RedisInter):
     def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
         self.redis = redis
         self.elastic = elastic
@@ -43,19 +43,19 @@ class FilmsService(ElasticInter):
 
     async def _get_films_from_elastic(self, query_params: QueryParams, **args) -> Optional[Films]:
         body = self._generate_body(query_params, **args)
+        if not body:
+            return None
         hits = await self._get_hits_from_elastic(body)
         films = [Film(uuid=hit['_id'], title=hit['_source']['title'],
                       imdb_rating=hit['_source']['imdb_rating']) for hit in hits]
         return Films(root=films) if films else None
 
     async def _get_films_from_cache(self, cache: str) -> Optional[Films]:
-        films = await self.redis.get(cache)
-        if not films:
-            return None
-        return Films.parse_raw(films)
+        films = await self._get_from_cache(cache)
+        return Films.parse_raw(films) if films else None
 
     async def _put_films_to_cache(self, cache: str, films: Films):
-        await self.redis.set(cache, films.json(), FILMS_CACHE_EXPIRE_IN_SECONDS)
+        await self._put_to_cache(cache, films.json(), FILMS_CACHE_EXPIRE_IN_SECONDS)
 
     def _path_for_cache(self):
         return 'films'

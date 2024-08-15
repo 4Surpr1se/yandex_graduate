@@ -10,7 +10,7 @@ from fastapi.datastructures import QueryParams
 from redis.asyncio import Redis
 
 from db.elastic import ElasticInter, get_elastic
-from db.redis import get_redis
+from db.redis import RedisInter, get_redis
 from models.person import Film, Person
 
 from .films import FilmsService
@@ -52,7 +52,7 @@ class FilmsByPersonId(FilmsService):
         return body
 
 
-class PersonService(ElasticInter):
+class PersonService(ElasticInter, RedisInter):
     def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
         self.redis = redis
         self.elastic = elastic
@@ -112,22 +112,19 @@ class PersonService(ElasticInter):
         return hashlib.sha256(key.encode()).hexdigest()
 
     async def _get_persons_from_cache(self, cache: str) -> Optional[List[Person]]:
-        persons = await self.redis.get(cache)
-        if not persons:
-            return None
-        return [Person.parse_raw(person) for person in json.loads(persons)]
+        persons = await self._get_from_cache(cache)
+        return [Person.parse_raw(person) for person in json.loads(persons)] \
+            if persons else None
 
     async def _put_persons_to_cache(self, cache: str, persons: List[Person]):
-        await self.redis.set(cache, json.dumps([person.json() for person in persons]), PERSONS_CACHE_EXPIRE_IN_SECONDS)
+        await self._put_to_cache(cache, json.dumps([person.json() for person in persons]), PERSONS_CACHE_EXPIRE_IN_SECONDS)
 
     async def _get_person_from_cache(self, cache: str) -> Optional[Person]:
-        person = await self.redis.get(cache)
-        if not person:
-            return None
-        return Person.parse_raw(person)
+        person = await self._get_from_cache(cache)
+        return Person.parse_raw(person) if person else None
 
     async def _put_person_to_cache(self, cache: str, person: Person):
-        await self.redis.set(cache, person.json(), PERSONS_CACHE_EXPIRE_IN_SECONDS)
+        await self._put_to_cache(cache, person.json(), PERSONS_CACHE_EXPIRE_IN_SECONDS)
 
 
 @ lru_cache()
