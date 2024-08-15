@@ -8,5 +8,5 @@ docker-compose.override.yml
 .env
 *.cpython-312.pyc
 */__pycache__/test_es.cpython-312-pytest-8.3.2.pyc
-tests/functional/src/__pycache__/test_es.cpython-312-pytest-8.3.2.pyc
-tests/functional/src/__pycache__/test_search.cpython-312-pytest-8.3.2.pyc
+tests/functional/src/__pycache__/
+tests/functional/__pycache__/

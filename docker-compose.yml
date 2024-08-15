@@ -72,6 +72,10 @@ services:
       && python3 utils/wait_for_redis.py
       && python3 utils/wait_for_es.py
       && pytest src"
+    depends_on:
+      - backend
+      - elasticsearch
+      - redis
       
 
 volumes:
