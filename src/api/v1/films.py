@@ -4,26 +4,29 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from models.film import Film
 from services.film import FilmService, get_film_service
-from services.films import Films, FilmsService, get_films_service
+from services.films import FilmsService, get_films_service
 from services.search_films import SearchFilmsService, search_films_service
+from services.base_service import ItemsModel
 
 router = APIRouter()
 
 
-@router.get('', response_model=Films)
-async def films_details(request: Request, film_service: FilmsService = Depends(get_films_service)) -> Films:
+@router.get('', response_model=ItemsModel)
+async def films_details(request: Request, film_service: FilmsService = Depends(get_films_service)) -> ItemsModel:
     query_params = request.query_params
-    films = await film_service.get_films(query_params)
+    films = await film_service.get_items(query_params)
+
     if not films:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='films not found')
     return films
 
 
-@router.get('/search', response_model=Films)
-async def search_films_details(request: Request, search_service: SearchFilmsService = Depends(search_films_service)) -> Films:
+@router.get('/search', response_model=ItemsModel)
+async def search_films_details(request: Request,
+                               search_service: SearchFilmsService = Depends(search_films_service)) -> ItemsModel:
     query_params = request.query_params
-    films = await search_service.get_films(query_params)
+    films = await search_service.get_items(query_params)
     if not films:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='films not found')
