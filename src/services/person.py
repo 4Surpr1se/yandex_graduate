@@ -1,16 +1,17 @@
 from functools import lru_cache
 from typing import Optional
-from pydantic import BaseModel
 
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 from fastapi.datastructures import QueryParams
+from pydantic import BaseModel
 from redis.asyncio import Redis
 
 from db.elastic import get_elastic
 from db.redis import get_redis
-from services.base_service import BaseSingleItemService, BasePluralItemsService, ItemsModel
 from models.person import Person
+from services.base_service import (BasePluralItemsService,
+                                   BaseSingleItemService, ItemsModel)
 
 from .films import FilmsService
 
@@ -61,7 +62,7 @@ class PersonService(BaseSingleItemService):
         query_params = QueryParams(**query_params, person_id=person_id)
         films_by_person = FilmsByPersonId(self.redis, self.elastic)
         films = await films_by_person.get_items(query_params)
-        return films.root
+        return films.root if films else None
 
 
 @ lru_cache()
