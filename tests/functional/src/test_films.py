@@ -89,7 +89,7 @@ async def test_get_film_by_id(existing_film_id):
     "params, expected_result_count",
     [
         ({"query": "Star Wars"}, True),
-        ({"query": "Non Existent Movie"}, False),
+        ({"query": "tttt"}, False),
     ]
 )
 async def test_search_films(params, expected_result_count):
