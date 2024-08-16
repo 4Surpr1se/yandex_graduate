@@ -7,6 +7,13 @@ class PersonBase(BaseModel):
     uuid: UUID4
     full_name: str
 
+    @model_validator(mode='before')
+    def rename_id_to_uuid(cls, values):
+        if 'id' in values:
+            values['uuid'] = values.pop('id')
+        return values
+
+
 
 class PersonFilm(BaseModel):
     uuid: UUID4

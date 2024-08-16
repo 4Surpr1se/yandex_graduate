@@ -1,4 +1,6 @@
 from functools import lru_cache
+import hashlib
+import json
 
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
@@ -12,6 +14,13 @@ from .films import FilmsService
 
 
 class SearchFilmsService(FilmsService):
+
+    def _generate_cache(self, query_params: QueryParams) -> str:
+        query_str = json.dumps(sorted(query_params.items())) if query_params else ''
+        key = f'{self.service_name}/search:{query_str}'
+        cache_key = hashlib.sha256(key.encode()).hexdigest()
+        return cache_key
+      
     def _generate_body(self, query_params: QueryParams) -> dict | None:
         page_size = int(query_params.get('page_size', 50))
         page_number = int(query_params.get('page_number', 1))
@@ -28,7 +37,8 @@ class SearchFilmsService(FilmsService):
                         {
                             'multi_match': {
                                 'query': search_query,
-                                'fields': ['title', 'description']
+                                'fields': ['title', "description"],
+                                "type": "phrase"
                             }
                         }
                     ] if search_query else [],
@@ -50,9 +60,6 @@ class SearchFilmsService(FilmsService):
             }
         }
         return body
-
-    def _path_for_cache(self):
-        return 'films/search'
 
 
 @lru_cache()
