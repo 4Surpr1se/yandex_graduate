@@ -9,12 +9,12 @@ BASE_URL = f"http://{test_settings.service_host}:{test_settings.service_port}/ap
 
 @pytest.mark.asyncio
 def check_films_structure(film):
-    assert 'id' in film
+    assert 'uuid' in film
     assert 'title' in film
     assert 'imdb_rating' in film
 
-    assert isinstance(film['id'], str)
-    assert len(film['id']) == 36
+    assert isinstance(film['uuid'], str)
+    assert len(film['uuid']) == 36
 
     assert isinstance(film['title'], str)
     assert len(film['title'].strip()) > 0
@@ -45,8 +45,8 @@ async def test_get_films(params, expected_result_count):
 
     for film in data:
         check_films_structure(film)
-        assert film['id'] not in film_ids
-        film_ids.add(film['id'])
+        assert film['uuid'] not in film_ids
+        film_ids.add(film['uuid'])
 
     assert data[0]['imdb_rating'] >= data[1]['imdb_rating']
 
@@ -58,7 +58,7 @@ def existing_film_id():
             response1 = await client.get(BASE_URL, params={"page_size": "1", "page_number": 1})
             assert response1.status_code == 200
             films1 = response1.json()
-            return films1[0]['id']
+            return films1[0]['uuid']
 
     return asyncio.run(get_film_id())
 
@@ -109,8 +109,8 @@ async def test_search_films(params, expected_result_count):
 
         for film in data:
             check_films_structure(film)
-            assert film['id'] not in film_ids
-            film_ids.add(film['id'])
+            assert film['uuid'] not in film_ids
+            film_ids.add(film['uuid'])
     else:
         assert len(data) == 0
         
