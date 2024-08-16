@@ -1,6 +1,4 @@
 import uuid
-import sys
-import os
 import asyncio
 import pytest
 from elasticsearch import AsyncElasticsearch
