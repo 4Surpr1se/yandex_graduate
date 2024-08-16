@@ -13,12 +13,13 @@ from services.base_service import BasePluralItemsService
 
 
 class FilmsService(BasePluralItemsService):
+  
     def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
         super().__init__(redis, elastic)
         self.index = 'movies'
         self.model: BaseModel = Film
         self.service_name = 'films'
-
+        
     def _generate_body(self, query_params: QueryParams) -> dict:
         page_size = int(query_params.get('page_size', 50))
         page_number = int(query_params.get('page_number', 1))

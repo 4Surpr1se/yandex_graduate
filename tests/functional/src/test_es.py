@@ -5,8 +5,6 @@ import asyncio
 import pytest
 from elasticsearch import AsyncElasticsearch
 from elasticsearch.helpers import async_bulk
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from settings import test_settings
 
 

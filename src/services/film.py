@@ -18,7 +18,7 @@ class FilmService(BaseSingleItemService):
         self.model: BaseModel = Film
         self.service_name = 'film'
 
-
+        
 @lru_cache()
 def get_film_service(
         redis: Redis = Depends(get_redis),

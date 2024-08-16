@@ -13,6 +13,7 @@ from services.base_service import BaseSingleItemService, BasePluralItemsService
 
 
 class GenreService(BasePluralItemsService):
+  
     def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
         super().__init__(redis, elastic)
         self.index = 'genres'

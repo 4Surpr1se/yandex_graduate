@@ -20,8 +20,7 @@ class SearchFilmsService(FilmsService):
         key = f'{self.service_name}/search:{query_str}'
         cache_key = hashlib.sha256(key.encode()).hexdigest()
         return cache_key
-
-
+      
     def _generate_body(self, query_params: QueryParams) -> dict | None:
         page_size = int(query_params.get('page_size', 50))
         page_number = int(query_params.get('page_number', 1))
