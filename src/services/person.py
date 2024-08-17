@@ -7,8 +7,10 @@ from fastapi.datastructures import QueryParams
 from pydantic import BaseModel
 from redis.asyncio import Redis
 
+from db.abstract_storage import AbstractCache, AbstractDataStorage
 from db.elastic import get_elastic
 from db.redis import get_redis
+
 from models.person import Person
 from services.base_service import (BasePluralItemsService,
                                    BaseSingleItemService, ItemsModel)
@@ -52,21 +54,22 @@ class FilmsByPersonId(FilmsService):
 
 
 class PersonService(BaseSingleItemService):
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
-        super().__init__(redis, elastic)
+    def __init__(self, cache: AbstractCache, storage: AbstractDataStorage):
+        super().__init__(cache, storage)
         self.index = 'persons'
         self.model: BaseModel = Person
         self.service_name = 'persons'
 
     async def get_films_by_person_id(self, query_params: QueryParams, person_id: str) -> Optional[ItemsModel]:
         query_params = QueryParams(**query_params, person_id=person_id)
-        films_by_person = FilmsByPersonId(self.redis, self.elastic)
+        films_by_person = FilmsByPersonId(self.cache, self.storage)
         films = await films_by_person.get_items(query_params)
         return films.root if films else None
 
 
 @ lru_cache()
 def get_person_service(
-        redis: Redis = Depends(get_redis),
-        elastic: AsyncElasticsearch = Depends(get_elastic)) -> PersonService:
-    return PersonService(redis, elastic)
+        cache: AbstractCache = Depends(get_redis),
+        storage: AbstractDataStorage = Depends(get_elastic),
+) -> PersonService:
+    return PersonService(cache, storage)

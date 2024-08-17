@@ -7,9 +7,9 @@ from fastapi import Depends
 from fastapi.datastructures import QueryParams
 from redis.asyncio import Redis
 
+from db.abstract_storage import AbstractCache, AbstractDataStorage
 from db.elastic import get_elastic
 from db.redis import get_redis
-
 from .films import FilmsService
 
 
@@ -64,7 +64,7 @@ class SearchFilmsService(FilmsService):
 
 @lru_cache()
 def search_films_service(
-        redis: Redis = Depends(get_redis),
-        elastic: AsyncElasticsearch = Depends(get_elastic),
+        cache: AbstractCache = Depends(get_redis),
+        storage: AbstractDataStorage = Depends(get_elastic),
 ) -> SearchFilmsService:
-    return SearchFilmsService(redis, elastic)
+    return SearchFilmsService(cache, storage)
