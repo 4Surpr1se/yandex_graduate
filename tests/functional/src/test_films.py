@@ -99,12 +99,12 @@ async def test_search_films(params, expected_result_count):
     async with httpx.AsyncClient() as client:
         response = await client.get(url, params=params)
 
-    assert response.status_code == HTTPStatus.OK
-    data = response.json()
-
-    assert isinstance(data, list)
 
     if expected_result_count:
+        assert response.status_code == HTTPStatus.OK
+
+        data = response.json()
+
         assert len(data) > 0
 
         film_ids = set()
@@ -114,7 +114,7 @@ async def test_search_films(params, expected_result_count):
             assert film['uuid'] not in film_ids
             film_ids.add(film['uuid'])
     else:
-        assert len(data) == 0
+        assert response.status_code == HTTPStatus.NOT_FOUND
 
 
 async def test_search_uses_cache(redis_client):
