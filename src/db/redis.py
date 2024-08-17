@@ -2,20 +2,19 @@ from typing import Optional
 
 from redis.asyncio import Redis
 
+from db.abstract_storage import AbstractCache
+
 redis: Optional[Redis] = None
 
+class RedisCache(AbstractCache):
+    def __init__(self, redis_client: Redis):
+        self.redis = redis_client
 
-async def get_redis() -> Redis:
-    return redis
+    async def get(self, key: str) -> Optional[str]:
+        return await self.redis.get(key)
 
+    async def set(self, key: str, value: str, expiration_time: int):
+        await self.redis.set(key, value, expiration_time)
 
-class RedisInter:
-    def __init__(self):
-        self.redis: Optional[Redis] = None
-
-    async def _put_to_cache(self, key: str, value: str, time: int):
-        await self.redis.set(key, value, time)
-
-    async def _get_from_cache(self, key: str):
-        value = await self.redis.get(key)
-        return value or None
+async def get_redis() -> RedisCache:
+    return RedisCache(redis)

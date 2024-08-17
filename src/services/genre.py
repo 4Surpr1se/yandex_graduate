@@ -6,6 +6,7 @@ from fastapi import Depends
 from redis.asyncio import Redis
 from starlette.datastructures import QueryParams
 
+from db.abstract_storage import AbstractCache, AbstractDataStorage
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.genre import Genre
@@ -14,8 +15,8 @@ from services.base_service import BaseSingleItemService, BasePluralItemsService
 
 class GenreService(BasePluralItemsService):
   
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
-        super().__init__(redis, elastic)
+    def __init__(self, cache: AbstractCache, storage: AbstractDataStorage):
+        super().__init__(cache, storage)
         self.index = 'genres'
         self.model: BaseModel = Genre
         self.service_name = 'genres'
@@ -31,7 +32,7 @@ class GenreService(BasePluralItemsService):
 
 @lru_cache()
 def get_genre_service(
-    redis: Redis = Depends(get_redis),
-    elastic: AsyncElasticsearch = Depends(get_elastic)
+        cache: AbstractCache = Depends(get_redis),
+        storage: AbstractDataStorage = Depends(get_elastic),
 ) -> GenreService:
-    return GenreService(redis, elastic)
+    return GenreService(cache, storage)

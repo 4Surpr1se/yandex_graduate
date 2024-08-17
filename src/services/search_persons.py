@@ -8,6 +8,7 @@ from fastapi import Depends
 from fastapi.datastructures import QueryParams
 from redis.asyncio import Redis
 
+from db.abstract_storage import AbstractCache, AbstractDataStorage
 from db.elastic import get_elastic
 from db.redis import get_redis
 from services.base_service import BaseSingleItemService, BasePluralItemsService
@@ -16,8 +17,8 @@ from models.person import Person
 
 class SearchPersonService(BasePluralItemsService):
 
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
-        super().__init__(redis, elastic)
+    def __init__(self, cache: AbstractCache, storage: AbstractDataStorage):
+        super().__init__(cache, storage)
         self.index = 'persons'
         self.model: BaseModel = Person
         self.service_name = 'persons'
@@ -56,7 +57,7 @@ class SearchPersonService(BasePluralItemsService):
 
 @ lru_cache()
 def search_persons_service(
-        redis: Redis = Depends(get_redis),
-        elastic: AsyncElasticsearch = Depends(get_elastic)
+        cache: AbstractCache = Depends(get_redis),
+        storage: AbstractDataStorage = Depends(get_elastic),
 ) -> SearchPersonService:
-    return SearchPersonService(redis, elastic)
+    return SearchPersonService(cache, storage)
