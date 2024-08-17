@@ -1,6 +1,7 @@
+
+
 from pydantic_settings import BaseSettings
-import os
-import sys 
+
 from testdata.es_mapping import es_index_mapping
 
 

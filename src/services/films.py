@@ -1,21 +1,20 @@
 from functools import lru_cache
 
-from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 from fastapi.datastructures import QueryParams
 from pydantic import BaseModel
-from redis.asyncio import Redis
 
-from db.elastic import ElasticInter, get_elastic
-from db.redis import RedisInter, get_redis
+from db.abstract_storage import AbstractCache, AbstractDataStorage
+from db.elastic import get_elastic
+from db.redis import get_redis
 from models.films import Film
 from services.base_service import BasePluralItemsService
 
 
 class FilmsService(BasePluralItemsService):
   
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
-        super().__init__(redis, elastic)
+    def __init__(self, cache: AbstractCache, storage: AbstractDataStorage):
+        super().__init__(cache, storage)
         self.index = 'movies'
         self.model: BaseModel = Film
         self.service_name = 'films'
@@ -50,7 +49,7 @@ class FilmsService(BasePluralItemsService):
 
 @lru_cache()
 def get_films_service(
-        redis: Redis = Depends(get_redis),
-        elastic: AsyncElasticsearch = Depends(get_elastic),
+        cache: AbstractCache = Depends(get_redis),
+        storage: AbstractDataStorage = Depends(get_elastic),
 ) -> FilmsService:
-    return FilmsService(redis, elastic)
+    return FilmsService(cache, storage)

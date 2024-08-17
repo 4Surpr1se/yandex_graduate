@@ -2,15 +2,11 @@ from typing import Optional, List, TypeVar
 import json
 import hashlib
 
-
-from elasticsearch import AsyncElasticsearch
-from redis.asyncio import Redis
 from fastapi.datastructures import QueryParams
 from pydantic import BaseModel, RootModel
 
 from core.cache_config import cache_config
-from db.elastic import ElasticInter
-from db.redis import RedisInter
+from db.abstract_storage import AbstractCache, AbstractDataStorage
 
 
 T = TypeVar('T', bound=BaseModel)
@@ -20,11 +16,11 @@ class ItemsModel(RootModel[List[T]]):
     pass
 
 
-class BaseSingleItemService(ElasticInter, RedisInter):
+class BaseSingleItemService:
 
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
-        self.redis = redis
-        self.elastic = elastic
+    def __init__(self, cache: AbstractCache, storage: AbstractDataStorage):
+        self.cache = cache
+        self.storage = storage
         self.index: Optional[str] = None
         self.model: Optional[BaseModel] = None
         self.service_name: Optional[str] = None
@@ -32,7 +28,7 @@ class BaseSingleItemService(ElasticInter, RedisInter):
     async def get_by_id(self, item_id: str) -> Optional[BaseModel]:
         item = await self._get_item_from_cache(item_id)
         if not item:
-            item = await self._get_item_by_id_from_elastic(item_id)
+            item = await self._get_item_by_id_from_storage(item_id)
             if not item:
                 return None
             await self._put_item_to_cache(item)
@@ -40,16 +36,16 @@ class BaseSingleItemService(ElasticInter, RedisInter):
 
     async def _put_item_to_cache(self, item: BaseModel):
         item_id_str = f'{self.model}:{str(item.uuid)}'
-        await self._put_to_cache(item_id_str,
+        await self.cache.set(item_id_str,
                                  item.json(),
                                  cache_config.get_expiration_time(self.service_name))
 
-    async def _get_item_by_id_from_elastic(self, item_id: str) -> Optional[BaseModel]:
-        item = await self._get_by_id_from_elastic(item_id)
+    async def _get_item_by_id_from_storage(self, item_id: str) -> Optional[BaseModel]:
+        item = await self.storage.get_by_id(self.index, item_id)
         return self.model(**item) if item else None
 
     async def _get_item_from_cache(self, item_id: str) -> Optional[BaseModel]:
-        data = await self._get_from_cache(item_id)
+        data = await self.cache.get(item_id)
         return self.model.model_validate_json(data) if data else None
 
 
@@ -61,26 +57,25 @@ class BasePluralItemsService(BaseSingleItemService):
         cache = self._generate_cache(query_params)
         items = await self._get_items_from_cache(cache)
         if not items:
-            items = await self._get_items_from_elastic(query_params)
+            items = await self._get_items_from_storage(query_params)
             if not items:
                 return None
             await self._put_items_to_cache(cache, items)
         return items
 
-    async def _get_items_from_elastic(self, query_params: QueryParams) -> Optional[ItemsModel]:
+    async def _get_items_from_storage(self, query_params: QueryParams) -> Optional[ItemsModel]:
         body = self._generate_body(query_params)
         if not body:
             return None
-        hits = await self._get_hits_from_elastic(body)
-        items = [self.model(**hit['_source']) for hit in hits]
+        items = await self.storage.get_list(self.index, body)
         return ItemsModel[self.model](root=items) if items else None
 
     async def _get_items_from_cache(self, cache: str) -> Optional[ItemsModel]:
-        items = await self._get_from_cache(cache)
+        items = await self.cache.get(cache)
         return ItemsModel[self.model].model_validate_json(items) if items else None
 
     async def _put_items_to_cache(self, cache: str, items: ItemsModel) -> None:
-        await self._put_to_cache(cache, items.json(), cache_config.get_expiration_time(self.service_name))
+        await self.cache.set(cache, items.json(), cache_config.get_expiration_time(self.service_name))
 
     def _generate_cache(self, query_params: QueryParams) -> str:
         query_str = json.dumps(sorted(query_params.items())) if query_params else ''

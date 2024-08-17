@@ -2,29 +2,29 @@ from typing import List, Optional
 
 from elasticsearch import AsyncElasticsearch, NotFoundError
 
+from db.abstract_storage import AbstractDataStorage
+
 es: Optional[AsyncElasticsearch] = None
 
 
-async def get_elastic() -> AsyncElasticsearch:
-    return es
+class ElasticDataStorage(AbstractDataStorage):
+    def __init__(self, elastic: AsyncElasticsearch):
+        self.elastic = elastic
 
-
-class ElasticInter:
-    def __init__(self):
-        self.elastic: Optional[AsyncElasticsearch] = None
-        self.index: Optional[str] = None
-
-    async def _get_by_id_from_elastic(self, id: str) -> Optional[dict]:
+    async def get_by_id(self, index: str, id: str) -> Optional[dict]:
         try:
-            res = await self.elastic.get(index=self.index, id=id)
+            res = await self.elastic.get(index=index, id=id)
         except NotFoundError:
             return None
         return res['_source']
 
-    async def _get_hits_from_elastic(self, body: dict) -> Optional[List[dict]]:
+    async def get_list(self, index: str, body: dict) -> Optional[List[dict]]:
         try:
-            res = await self.elastic.search(index=self.index, body=body)
+            res = await self.elastic.search(index=index, body=body)
             hits = res['hits']['hits']
         except NotFoundError:
             return None
-        return hits
+        return [hit['_source'] for hit in hits]
+
+async def get_elastic() -> ElasticDataStorage:
+    return ElasticDataStorage(es)

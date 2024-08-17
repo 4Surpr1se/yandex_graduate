@@ -1,13 +1,17 @@
-import pytest
+import time
 import uuid
 from http import HTTPStatus
+
 import httpx
-import time
+import pytest
 from settings import test_settings
+
+pytestmark = pytest.mark.asyncio
+
 
 BASE_URL = f"http://{test_settings.service_host}:{test_settings.service_port}/api/v1/genres"
 
-@pytest.mark.asyncio
+
 async def test_get_genres_list():
     async with httpx.AsyncClient() as client:
         response = await client.get(BASE_URL)
@@ -20,6 +24,7 @@ async def test_get_genres_list():
             assert "name" in genre
             assert "description" in genre
 
+
 @pytest.fixture(scope="module")
 async def existing_genre_id():
     async with httpx.AsyncClient() as client:
@@ -28,7 +33,7 @@ async def existing_genre_id():
         genre = response_single.json()
         return genre[0]['uuid'] if genre else None
 
-@pytest.mark.asyncio
+
 @pytest.mark.parametrize(
     "genre_id, expected_status, expected_response",
     [
@@ -36,8 +41,10 @@ async def existing_genre_id():
         (None, HTTPStatus.OK, None),
 
         # Параметры для запросов, когда жанр не найден
-        (uuid.uuid4(), HTTPStatus.NOT_FOUND, {"detail": "Genre not found"}),  # UUID не существует
-        ('12412', HTTPStatus.NOT_FOUND, {"detail": "Genre not found"})  # Некорректный ID
+        (uuid.uuid4(), HTTPStatus.NOT_FOUND, {
+         "detail": "Genre not found"}),  # UUID не существует
+        ('12412', HTTPStatus.NOT_FOUND, {
+         "detail": "Genre not found"})  # Некорректный ID
     ]
 )
 async def test_get_genre_by_id(genre_id, expected_status, expected_response, existing_genre_id):
@@ -55,7 +62,7 @@ async def test_get_genre_by_id(genre_id, expected_status, expected_response, exi
             assert data["uuid"] == str(genre_id)
             assert "name" in data
 
-@pytest.mark.asyncio
+
 async def test_search_uses_cache(redis_client):
     redis_client.flushdb()
 

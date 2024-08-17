@@ -1,13 +1,18 @@
-import pytest
-import httpx
-import uuid
 import asyncio
 import time
+import uuid
+from http import HTTPStatus
+
+import httpx
+import pytest
 from settings import test_settings
+
+pytestmark = pytest.mark.asyncio
+
 
 BASE_URL = f"http://{test_settings.service_host}:{test_settings.service_port}/api/v1/films"
 
-@pytest.mark.asyncio
+
 def check_films_structure(film):
     assert 'uuid' in film
     assert 'title' in film
@@ -21,9 +26,8 @@ def check_films_structure(film):
 
     assert isinstance(film['imdb_rating'], (float, int))
     assert 0 < film['imdb_rating'] <= 10
-    
 
-@pytest.mark.asyncio
+
 @pytest.mark.parametrize(
     "params, expected_result_count",
     [
@@ -34,13 +38,13 @@ def check_films_structure(film):
 async def test_get_films(params, expected_result_count):
     async with httpx.AsyncClient() as client:
         response = await client.get(BASE_URL, params=params)
-    
-    assert response.status_code == 200
+
+    assert response.status_code == HTTPStatus.OK
     data = response.json()
 
     assert isinstance(data, list)
     assert len(data) == expected_result_count
-    
+
     film_ids = set()
 
     for film in data:
@@ -56,30 +60,28 @@ def existing_film_id():
     async def get_film_id():
         async with httpx.AsyncClient() as client:
             response1 = await client.get(BASE_URL, params={"page_size": "1", "page_number": 1})
-            assert response1.status_code == 200
+            assert response1.status_code == HTTPStatus.OK
             films1 = response1.json()
             return films1[0]['uuid']
 
     return asyncio.run(get_film_id())
 
 
-@pytest.mark.asyncio
 async def test_get_film_by_id(existing_film_id):
     url = f"{BASE_URL}/{existing_film_id}"
-    
+
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
-    
-    assert response.status_code == 200
+
+    assert response.status_code == HTTPStatus.OK
 
     film = response.json()
 
     check_films_structure(film)
-    
+
     nonexistent_id = str(uuid.uuid4())
     url = f"{BASE_URL}/{nonexistent_id}"
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
-    
-    assert response.status_code == 404
 
+    assert response.status_code == HTTPStatus.NOT_FOUND
