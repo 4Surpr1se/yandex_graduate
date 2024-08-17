@@ -1,6 +1,8 @@
 import pytest
 import redis
+
 from .settings import test_settings
+
 
 @pytest.fixture(scope='function')
 def redis_client():

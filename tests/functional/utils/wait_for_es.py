@@ -1,7 +1,6 @@
 import time
+
 from elasticsearch import Elasticsearch
-import os
-import sys
 
 from settings import test_settings
 

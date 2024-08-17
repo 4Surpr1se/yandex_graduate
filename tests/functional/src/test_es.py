@@ -1,10 +1,10 @@
-import uuid
-import sys
-import os
 import asyncio
+import uuid
+
 import pytest
 from elasticsearch import AsyncElasticsearch
 from elasticsearch.helpers import async_bulk
+
 from settings import test_settings
 
 

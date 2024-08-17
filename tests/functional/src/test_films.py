@@ -1,8 +1,10 @@
-import pytest
-import httpx
-import uuid
 import asyncio
 import time
+import uuid
+
+import httpx
+import pytest
+
 from settings import test_settings
 
 BASE_URL = f"http://{test_settings.service_host}:{test_settings.service_port}/api/v1/films"
