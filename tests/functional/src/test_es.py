@@ -4,11 +4,11 @@ import uuid
 import pytest
 from elasticsearch import AsyncElasticsearch
 from elasticsearch.helpers import async_bulk
-
 from settings import test_settings
 
+pytestmark = pytest.mark.asyncio
 
-@pytest.mark.asyncio
+
 async def test_search():
 
     es_data = [{
@@ -39,7 +39,8 @@ async def test_search():
         data.update({'_source': row})
         bulk_query.append(data)
 
-    es_client = AsyncElasticsearch(hosts=f"http://{test_settings.elastic_host}:{test_settings.elastic_port}", verify_certs=False)
+    es_client = AsyncElasticsearch(
+        hosts=f"http://{test_settings.elastic_host}:{test_settings.elastic_port}", verify_certs=False)
     if await es_client.indices.exists(index=test_settings.es_index):
         await es_client.indices.delete(index=test_settings.es_index)
     await es_client.indices.create(index=test_settings.es_index, **test_settings.es_index_mapping)
@@ -48,11 +49,11 @@ async def test_search():
 
     if errors:
         raise Exception('Ошибка записи данных в Elasticsearch')
-    
+
     await asyncio.sleep(1)
-    
+
     search_query = {
-        "size": 100, 
+        "size": 100,
         "query": {
             "match_all": {}
         }

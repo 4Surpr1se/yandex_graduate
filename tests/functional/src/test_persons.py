@@ -1,11 +1,14 @@
 import asyncio
 import time
 import uuid
+from http import HTTPStatus
 
 import httpx
 import pytest
-
 from settings import test_settings
+
+pytestmark = pytest.mark.asyncio
+
 
 BASE_URL = f'http://{test_settings.service_host}:{test_settings.service_port}/api/v1'
 FILMS_URL = BASE_URL + '/films'
@@ -46,7 +49,7 @@ def existing_film_ids():
     async def get_film_ids():
         async with httpx.AsyncClient() as client:
             response = await client.get(FILMS_URL, params={'page_size': '5', 'page_number': 1})
-            assert response.status_code == 200
+            assert response.status_code == HTTPStatus.OK
             films = response.json()
             return [film['uuid'] for film in films]
     return asyncio.run(get_film_ids())
@@ -59,7 +62,7 @@ def existing_person_ids(existing_film_ids):
             ids = []
             for existing_film_id in existing_film_ids:
                 response = await client.get(f'{FILMS_URL}/{existing_film_id}')
-                assert response.status_code == 200
+                assert response.status_code == HTTPStatus.OK
                 films = response.json()
                 actors = films['actors']
                 directors = films['directors']
@@ -74,14 +77,13 @@ def existing_person_ids(existing_film_ids):
     return asyncio.run(get_person_ids())
 
 
-@pytest.mark.asyncio
 async def test_get_person_by_id(existing_person_ids):
     existing_person_id = existing_person_ids[0]
     url = f'{PERSONS_URL}/{existing_person_id}'
 
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
 
     person = response.json()
     chech_person_structure(person)
@@ -90,17 +92,16 @@ async def test_get_person_by_id(existing_person_ids):
     url = f'{PERSONS_URL}/{nonexistent_id}'
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
-    assert response.status_code == 404
+    assert response.status_code == HTTPStatus.NOT_FOUND
 
 
-@pytest.mark.asyncio
 async def test_get_films_by_person(existing_person_ids):
     existing_person_id = existing_person_ids[0]
     url = f'{PERSONS_URL}/{existing_person_id}/film'
 
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
 
     films = response.json()
     for film in films:
@@ -110,10 +111,9 @@ async def test_get_films_by_person(existing_person_ids):
     url = f'{PERSONS_URL}/{nonexistent_id}/film'
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
-    assert response.status_code == 404
+    assert response.status_code == HTTPStatus.NOT_FOUND
 
 
-@pytest.mark.asyncio
 async def test_get_person_uses_cache(existing_person_ids, redis_client):
     redis_client.flushdb()
 
@@ -122,7 +122,7 @@ async def test_get_person_uses_cache(existing_person_ids, redis_client):
         start_time = time.time()
         for existing_person_id in existing_person_ids:
             response = await client.get(f'{PERSONS_URL}/{existing_person_id}')
-            assert response.status_code == 200
+            assert response.status_code == HTTPStatus.OK
         end_time = time.time()
         initial_time = end_time - start_time
 
@@ -130,9 +130,7 @@ async def test_get_person_uses_cache(existing_person_ids, redis_client):
         start_time = time.time()
         for existing_person_id in existing_person_ids:
             response = await client.get(f'{PERSONS_URL}/{existing_person_id}')
-            assert response.status_code == 200
-        assert response.status_code == 200
-
+            assert response.status_code == HTTPStatus.OK
         end_time = time.time()
         cached_time = end_time - start_time
 
