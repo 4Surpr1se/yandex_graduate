@@ -6,16 +6,16 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 # Устанавливаем рабочую директорию
-WORKDIR /app
+WORKDIR /auth
 
 # Копируем файл зависимостей
-COPY requirements.txt .
+COPY auth_service/requirements.txt .
 
 # Устанавливаем зависимости
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Копируем исходный код приложения в контейнер
-COPY . .
+COPY auth_service/. .
 
 # Открываем порт, на котором будет работать приложение
 EXPOSE 8000
