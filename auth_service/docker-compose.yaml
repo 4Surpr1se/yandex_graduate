@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  auth_db:
+    image: postgres:16.3
+    container_name: auth_postgres
+    env_file:
+      - src/.env
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./pg_auth_data:/var/lib/postgresql/data
+      - ./src/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  auth_service:
+    build:
+      context: .
+      dockerfile: src/Dockerfile
+    container_name: auth_service
+    env_file:
+      - src/.env
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - auth_db
+
+volumes:
+  postgres_data:
