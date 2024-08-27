@@ -9,7 +9,7 @@ from src.api import user
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    from src.models.entity import User
+    from src.models.user import User
     await create_tables()
     yield
 
