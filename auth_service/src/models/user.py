@@ -22,7 +22,7 @@ class User(Base):
     last_name = Column(String(50))
     created_at = Column(DateTime, default=datetime.utcnow)
     
-    roles = relationship('Role', secondary=UserRole.__table__, backref='users')
+    roles = relationship('Role', secondary=UserRole.__table__, backref='users', lazy='joined')
 
     def __init__(self, login: str, password: str, first_name: str, last_name: str) -> None:
         self.login = login
