@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.services.user import create_user_service  # импортируем сервис для создания пользователя
-from src.schemas.entity import UserCreate, UserInDB
+from src.schemas.user import UserCreate, UserInDB
 from src.db.postgres import get_session  # Импортируем функцию получения сессии
 
 router = APIRouter()
