@@ -36,7 +36,13 @@ async def authenticate_user(login: str, password: str, db: AsyncSession) -> User
         return user
     return None
 
-async def create_tokens(user: User) -> Token:
+async def create_tokens(user: User, db: AsyncSession) -> Token:
     access_token = create_access_token(data={"sub": user.login})
     refresh_token = create_refresh_token(data={"sub": user.login})
+
+    user.refresh_token = refresh_token
+    db.add(user)
+    await db.commit() 
+    await db.refresh(user)
+
     return Token(access_token=access_token, refresh_token=refresh_token)

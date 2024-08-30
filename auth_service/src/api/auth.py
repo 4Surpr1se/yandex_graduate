@@ -17,7 +17,7 @@ async def login(user_auth: UserAuth, response: Response, db: AsyncSession = Depe
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    tokens = await create_tokens(user)
+    tokens = await create_tokens(user, db)
     
     response.set_cookie(key="access_token", value=tokens.access_token, httponly=True, max_age=60*settings.access_token_expire_minutes)
     response.set_cookie(key="refresh_token", value=tokens.refresh_token, httponly=True, max_age=60*60*24*settings.refresh_token_expire_days)
