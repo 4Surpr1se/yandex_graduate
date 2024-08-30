@@ -7,15 +7,17 @@ from src.schemas.auth import Token
 from werkzeug.security import check_password_hash
 from sqlalchemy.future import select
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
+def create_access_token(data: dict, roles: list[str], expires_delta: timedelta | None = None):
     to_encode = data.copy()
+    to_encode["roles"] = roles
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=settings.access_token_expire_minutes))
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
     return encoded_jwt
 
-def create_refresh_token(data: dict, expires_delta: timedelta | None = None):
+def create_refresh_token(data: dict, roles: list[str], expires_delta: timedelta | None = None):
     to_encode = data.copy()
+    to_encode["roles"] = roles
     expire = datetime.utcnow() + (expires_delta or timedelta(days=settings.refresh_token_expire_days))
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
@@ -37,8 +39,10 @@ async def authenticate_user(login: str, password: str, db: AsyncSession) -> User
     return None
 
 async def create_tokens(user: User, db: AsyncSession) -> Token:
-    access_token = create_access_token(data={"sub": user.login})
-    refresh_token = create_refresh_token(data={"sub": user.login})
+    roles = [role.name for role in user.roles]
+
+    access_token = create_access_token(data={"sub": user.login}, roles=roles)
+    refresh_token = create_refresh_token(data={"sub": user.login}, roles=roles)
 
     user.refresh_token = refresh_token
     db.add(user)
