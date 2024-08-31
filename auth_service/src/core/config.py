@@ -8,6 +8,10 @@ class ConfigSettings(BaseSettings):
     postgres_user: str
     postgres_password: str
     project_name: str = 'auth'
+    jwt_secret_key: str 
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 15
+    refresh_token_expire_days: int = 7
 
     class Config:
         env_file = "../.env"

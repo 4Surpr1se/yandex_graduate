@@ -21,6 +21,7 @@ class User(Base):
     first_name = Column(String(50))
     last_name = Column(String(50))
     created_at = Column(DateTime, default=datetime.utcnow)
+    refresh_token = Column(String, nullable=True)
     
     roles = relationship('Role', secondary=UserRole.__table__, backref='users', lazy='joined')
 
