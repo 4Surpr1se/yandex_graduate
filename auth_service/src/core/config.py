@@ -12,6 +12,7 @@ class ConfigSettings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
+    redis_url: str = "redis_auth:6379/0"
 
     class Config:
         env_file = "../.env"

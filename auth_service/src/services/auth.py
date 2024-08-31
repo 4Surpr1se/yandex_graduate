@@ -4,6 +4,7 @@ from src.core.config import settings
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.user import User
 from src.schemas.auth import Token
+from src.db.redis import redis_client
 from werkzeug.security import check_password_hash
 from sqlalchemy.future import select
 
@@ -23,12 +24,18 @@ def create_refresh_token(data: dict, roles: list[str], expires_delta: timedelta 
     encoded_jwt = jwt.encode(to_encode, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
     return encoded_jwt
 
-def verify_token(token: str):
+async def verify_token(token: str):
+    is_invalid = await redis_client.get(token)
+    if is_invalid:
+        return None
+
     try:
         payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
         return payload
     except JWTError:
         return None
+    
+    
 
 async def authenticate_user(login: str, password: str, db: AsyncSession) -> User | None:
     result = await db.execute(select(User).where(User.login == login))

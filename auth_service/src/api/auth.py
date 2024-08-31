@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.schemas.auth import UserAuth
 from src.services.auth import authenticate_user, create_tokens
 from src.db.postgres import get_session
 from src.core.config import settings
+from src.db.redis import redis_client
+
 
 router = APIRouter()
 
@@ -24,3 +26,26 @@ async def login(user_auth: UserAuth, response: Response, db: AsyncSession = Depe
     
     response.status_code = status.HTTP_200_OK
     return response
+
+
+@router.post('/logout', status_code=status.HTTP_200_OK)
+async def logout(request: Request, response: Response, db: AsyncSession = Depends(get_session)):
+    access_token = request.cookies.get("access_token")
+    
+    if not access_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No access token provided",
+        )
+        
+    await redis_client.setex(
+        access_token, 
+        settings.access_token_expire_minutes * 60, 
+        "invalid"
+    )
+    
+    response.delete_cookie(key="access_token")
+    response.delete_cookie(key="refresh_token")
+    
+    response.status_code = status.HTTP_200_OK
+    return {"msg": "Logged out successfully"}
