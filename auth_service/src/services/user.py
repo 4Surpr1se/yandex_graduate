@@ -41,3 +41,14 @@ async def seed_roles(db: AsyncSession):
         if role_name not in existing_role_names:
             db.add(Role(name=role_name))
     await db.commit()
+    
+async def get_user_by_login(login: str, db: AsyncSession) -> User | None:
+    result = await db.execute(select(User).where(User.login == login))
+    user = result.scalars().first()
+    return user
+
+async def update_user_refresh_token(user: User, refresh_token: str, db: AsyncSession):
+    user.refresh_token = refresh_token
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)

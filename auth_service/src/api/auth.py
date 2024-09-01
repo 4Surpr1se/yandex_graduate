@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.schemas.auth import UserAuth
-from src.services.auth import authenticate_user, create_tokens
+from src.services.auth import authenticate_user, create_tokens, verify_token, create_access_token, create_refresh_token
+from src.services.user import get_user_by_login, update_user_refresh_token
 from src.db.postgres import get_session
 from src.core.config import settings
 from src.db.redis import redis_client
@@ -49,3 +50,41 @@ async def logout(request: Request, response: Response, db: AsyncSession = Depend
     
     response.status_code = status.HTTP_200_OK
     return {"msg": "Logged out successfully"}
+
+
+@router.post('/refresh', status_code=status.HTTP_200_OK)
+async def refresh(request: Request, response: Response, db: AsyncSession = Depends(get_session)):
+    refresh_token = request.cookies.get("refresh_token")
+    
+    if not refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No refresh token provided",
+        )
+    
+    payload = await verify_token(refresh_token)
+    
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token",
+        )
+    
+    user = await get_user_by_login(payload.get("sub"), db)
+
+    if not user or user.refresh_token != refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token",
+        )
+    
+    new_access_token = create_access_token(data={"sub": user.login}, roles=[role.name for role in user.roles])
+    new_refresh_token = create_refresh_token(data={"sub": user.login}, roles=[role.name for role in user.roles])
+
+    await update_user_refresh_token(user, new_refresh_token, db)
+
+    response.set_cookie(key="access_token", value=new_access_token, httponly=True, max_age=60*settings.access_token_expire_minutes)
+    response.set_cookie(key="refresh_token", value=new_refresh_token, httponly=True, max_age=60*60*24*settings.refresh_token_expire_days)
+
+    response.status_code = status.HTTP_200_OK
+    return {"access_token": new_access_token}
