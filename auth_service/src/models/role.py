@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from src.db.postgres import Base
 import uuid
 
+
 class Role(Base):
     __tablename__ = 'roles'
 
