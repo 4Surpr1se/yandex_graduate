@@ -88,6 +88,10 @@ services:
       - ./auth_service/pg_auth_data:/var/lib/postgresql/data
       - ./auth_service/src/init.sql:/docker-entrypoint-initdb.d/init.sql
 
+  auth_redis:
+    image: redis:7.4.0
+    restart: always
+
   auth_service:
     build:
       context: .
