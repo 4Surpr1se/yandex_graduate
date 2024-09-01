@@ -1,4 +1,5 @@
 from uuid import UUID
+from typing import List
 
 from pydantic import BaseModel
 
@@ -17,3 +18,7 @@ class UserInDB(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class UserRoleRequest(BaseModel):
+    role: str
