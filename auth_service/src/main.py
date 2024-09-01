@@ -4,7 +4,7 @@ from fastapi.responses import ORJSONResponse
 
 from src.db.postgres import create_tables
 from src.core.config import settings
-from src.api import user, auth
+from src.api import user, auth, admin
 
 
 @asynccontextmanager
@@ -25,3 +25,4 @@ app = FastAPI(
 # Подключаем маршруты
 app.include_router(user.router, prefix="/api/users", tags=["users"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
