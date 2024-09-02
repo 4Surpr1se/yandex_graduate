@@ -22,3 +22,8 @@ class UserInDB(BaseModel):
 
 class UserRoleRequest(BaseModel):
     role: str
+
+
+class UpdateResponse(BaseModel):
+    success: bool
+    message: str
