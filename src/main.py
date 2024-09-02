@@ -29,8 +29,7 @@ app = FastAPI(
     docs_url='/api/openapi',
     openapi_url='/api/openapi.json',
     default_response_class=ORJSONResponse,
-    lifespan=lifespan,
-    dependencies=[Depends(verify_jwt)] 
+    lifespan=lifespan 
 )
 
 
