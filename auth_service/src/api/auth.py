@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.schemas.auth import UserAuth
 from src.services.auth import authenticate_user, create_tokens, decode_token
+
 from src.db.postgres import get_session
 from src.core.config import settings
 from src.db.redis import redis_client
@@ -48,6 +49,7 @@ async def logout(request: Request, response: Response, db: AsyncSession = Depend
     
     response.status_code = status.HTTP_200_OK
     return {"msg": "Logged out successfully"}
+
 
 @router.post('/verify_token', status_code=status.HTTP_200_OK)
 async def verify_token(request: Request, db: AsyncSession = Depends(get_session)):
