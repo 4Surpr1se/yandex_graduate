@@ -1,5 +1,6 @@
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import Response
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from starlette import status
@@ -57,9 +58,18 @@ async def update_login_service(db: AsyncSession, new_login: str,
                                access_token: str
                                ) -> Response | None:
 
-    user = await get_user_by_login(db, access_token)
+    user = await get_user_by_token(db, access_token)
     if not user:
         return
+
+    existing_user = await db.execute(select(User).where(User.login == new_login))
+    existing_user = existing_user.unique().scalar_one_or_none()
+
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Login already in use. Please choose another login."
+        )
     user.login = new_login
     await db.commit()
 
@@ -76,7 +86,7 @@ async def update_login_service(db: AsyncSession, new_login: str,
 
 
 async def update_password_service(db: AsyncSession, new_password: str, access_token: str) -> UpdateResponse | None:
-    user = await get_user_by_login(db, access_token)
+    user = await get_user_by_token(db, access_token)
     if not user:
         return
     user.password = generate_password_hash(new_password)
@@ -85,7 +95,7 @@ async def update_password_service(db: AsyncSession, new_password: str, access_to
                           message=f"User password changed successfully.")
 
 
-async def get_user_by_login(db: AsyncSession, access_token: str) -> User | None:
+async def get_user_by_token(db: AsyncSession, access_token: str) -> User | None:
     access_token = await verify_token(access_token)
 
     if access_token is None or not (login := access_token.get('sub')):
