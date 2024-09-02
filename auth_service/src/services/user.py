@@ -104,7 +104,14 @@ async def get_user_by_token(db: AsyncSession, access_token: str) -> User | None:
     user = await db.execute(select(User).where(User.login == login))
     user = user.unique().scalar_one_or_none()
     return user
-  
+
+
+async def get_user_by_login(login: str, db: AsyncSession) -> User | None:
+    result = await db.execute(select(User).where(User.login == login))
+    user = result.scalars().first()
+    return user
+
+
 async def update_user_refresh_token(user: User, refresh_token: str, db: AsyncSession):
     user.refresh_token = refresh_token
     db.add(user)
