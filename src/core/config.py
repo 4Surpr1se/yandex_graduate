@@ -7,6 +7,7 @@ class ConfigSettings(BaseSettings):
     redis_host: str
     redis_port: str
     project_name: str = 'films'
+    auth_service_url: str = 'http://auth_service:8000'
 
     class Config:
         env_file = "../.env"

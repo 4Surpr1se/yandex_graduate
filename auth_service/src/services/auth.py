@@ -24,19 +24,6 @@ def create_refresh_token(data: dict, roles: list[str], expires_delta: timedelta 
     encoded_jwt = jwt.encode(to_encode, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
     return encoded_jwt
 
-async def verify_token(token: str):
-    is_invalid = await redis_client.get(token)
-    if is_invalid:
-        return None
-
-    try:
-        payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
-        return payload
-    except JWTError:
-        return None
-    
-    
-
 async def authenticate_user(login: str, password: str, db: AsyncSession) -> User | None:
     result = await db.execute(select(User).where(User.login == login))
     user = result.scalars().first() 
@@ -57,3 +44,15 @@ async def create_tokens(user: User, db: AsyncSession) -> Token:
     await db.refresh(user)
 
     return Token(access_token=access_token, refresh_token=refresh_token)
+
+
+async def decode_token(token: str) -> dict | None:
+    is_invalid = await redis_client.get(token)
+    if is_invalid:
+        return None
+
+    try:
+        payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
+        return payload
+    except JWTError:
+        return None
