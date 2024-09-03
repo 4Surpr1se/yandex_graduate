@@ -8,7 +8,7 @@ from werkzeug.security import generate_password_hash
 
 from src.core.config import settings
 from src.db.redis import redis_client
-from src.services.auth import verify_token, create_tokens
+from src.services.auth import decode_token, create_tokens
 from src.models.user import User
 from src.models.role import Role
 from src.schemas.user import UserCreate, UserInDB, UpdateResponse
@@ -96,7 +96,7 @@ async def update_password_service(db: AsyncSession, new_password: str, access_to
 
 
 async def get_user_by_token(db: AsyncSession, access_token: str) -> User | None:
-    access_token = await verify_token(access_token)
+    access_token = await decode_token(access_token)
 
     if access_token is None or not (login := access_token.get('sub')):
         return
