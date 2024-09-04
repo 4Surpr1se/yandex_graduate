@@ -1,5 +1,3 @@
-
-
 from pydantic_settings import BaseSettings
 
 from testdata.es_mapping import es_index_mapping
@@ -14,5 +12,6 @@ class TestSettings(BaseSettings):
     es_index_mapping: dict = es_index_mapping
     service_host: str = '127.0.0.1'
     service_port: str = '80'
+    auth_service_url: str = 'http://127.0.0.1:8000/'
 
 test_settings = TestSettings() 
