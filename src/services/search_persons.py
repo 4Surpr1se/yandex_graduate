@@ -1,17 +1,17 @@
 import hashlib
 import json
 from functools import lru_cache
+from http import HTTPStatus
+from typing import List
 from pydantic import BaseModel
 
-from elasticsearch import AsyncElasticsearch
-from fastapi import Depends
+from fastapi import Depends, Request, HTTPException
 from fastapi.datastructures import QueryParams
-from redis.asyncio import Redis
 
 from db.abstract_storage import AbstractCache, AbstractDataStorage
 from db.elastic import get_elastic
 from db.redis import get_redis
-from services.base_service import BaseSingleItemService, BasePluralItemsService
+from services.base_service import BaseSingleItemService, BasePluralItemsService, ItemsModel
 from models.person import Person
 
 
@@ -53,6 +53,15 @@ class SearchPersonService(BasePluralItemsService):
         }
 
         return body
+
+    async def get_items(self, request: Request, query_params: QueryParams = None) -> List[ItemsModel] | None:
+        roles = await self.get_roles(request)
+
+        if not roles:
+            raise HTTPException(status_code=HTTPStatus.METHOD_NOT_ALLOWED,
+                                detail='Not allowed for unauthorized users')
+
+        return await super().get_items(query_params=query_params)
 
 
 @ lru_cache()

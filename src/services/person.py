@@ -1,11 +1,10 @@
 from functools import lru_cache
-from typing import Optional
+from http import HTTPStatus
+from typing import Optional, List
 
-from elasticsearch import AsyncElasticsearch
-from fastapi import Depends
+from fastapi import Depends, Request, HTTPException
 from fastapi.datastructures import QueryParams
 from pydantic import BaseModel
-from redis.asyncio import Redis
 
 from db.abstract_storage import AbstractCache, AbstractDataStorage
 from db.elastic import get_elastic
@@ -15,7 +14,7 @@ from models.person import Person
 from services.base_service import (BasePluralItemsService,
                                    BaseSingleItemService, ItemsModel)
 
-from .films import FilmsService
+from services.films import FilmsService
 
 
 class FilmsByPersonId(FilmsService):
@@ -60,10 +59,16 @@ class PersonService(BaseSingleItemService):
         self.model: BaseModel = Person
         self.service_name = 'persons'
 
-    async def get_films_by_person_id(self, query_params: QueryParams, person_id: str) -> Optional[ItemsModel]:
+    async def get_films_by_person_id(self, request: Request,  query_params: QueryParams, person_id: str) -> Optional[ItemsModel]:
+        roles = await self.get_roles(request)
+
+        if not roles:
+            raise HTTPException(status_code=HTTPStatus.METHOD_NOT_ALLOWED,
+                                detail='Not allowed for unauthorized users')
+
         query_params = QueryParams(**query_params, person_id=person_id)
         films_by_person = FilmsByPersonId(self.cache, self.storage)
-        films = await films_by_person.get_items(query_params)
+        films = await films_by_person.get_items(request=request, query_params=query_params)
         return films.root if films else None
 
 
