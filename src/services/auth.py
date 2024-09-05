@@ -14,7 +14,7 @@ async def verify_jwt(request: Request):
 
     if not token and refresh_token:
     
-        new_tokens = await refresh_access_token(refresh_token, headers)
+        new_tokens = await refresh_access_token(headers)
         if new_tokens:
             token = new_tokens.get("access_token")
             request.cookies["access_token"] = token
