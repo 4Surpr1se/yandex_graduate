@@ -14,7 +14,7 @@ router = APIRouter()
 @router.get('', response_model=ItemsModel)
 async def films_details(request: Request, film_service: FilmsService = Depends(get_films_service)) -> ItemsModel:
     query_params = request.query_params
-    films = await film_service.get_items(query_params)
+    films = await film_service.get_items(request=request, query_params=query_params)
 
     if not films:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
@@ -26,7 +26,7 @@ async def films_details(request: Request, film_service: FilmsService = Depends(g
 async def search_films_details(request: Request,
                                search_service: SearchFilmsService = Depends(search_films_service)) -> ItemsModel:
     query_params = request.query_params
-    films = await search_service.get_items(query_params)
+    films = await search_service.get_items(request=request, query_params=query_params)
     if not films:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='films not found')
@@ -34,8 +34,8 @@ async def search_films_details(request: Request,
 
 
 @router.get('/{film_id}', response_model=Film)
-async def film_details(film_id: str, film_service: FilmService = Depends(get_film_service)) -> Film:
-    film = await film_service.get_by_id(film_id)
+async def film_details(request: Request, film_id: str, film_service: FilmService = Depends(get_film_service)) -> Film:
+    film = await film_service.get_by_id(item_id=film_id, request=request)
     if not film:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='film not found')

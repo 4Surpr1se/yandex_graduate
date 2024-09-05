@@ -12,22 +12,29 @@ router = APIRouter()
 
 
 @router.get("/search", response_model=ItemsModel)
-async def search_persons(
-    request: Request,
-    search_service: SearchPersonService = Depends(search_persons_service)
-) -> ItemsModel:
-    query_params = request.query_params
+async def search_persons(request: Request,
+                         search_service: SearchPersonService = Depends(search_persons_service)
+                         ) -> ItemsModel:
+    try:
+        query_params = request.query_params
+    except Exception as e:
+        query_params = {}
+        print(e)
     logging.info(
         f"API call: search_persons with specific query: {query_params}")
-    persons = await search_service.get_items(query_params)
+    persons = await search_service.get_items(request=request, query_params=query_params)
+    if not persons:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
+                            detail='Persons not found')
     return persons
 
 
 @router.get("/{uuid}", response_model=Person)
-async def get_person(uuid: str, person_service: PersonService = Depends(get_person_service)
+async def get_person(uuid: str, request: Request,
+                     person_service: PersonService = Depends(get_person_service)
                      ) -> Person:
     logging.info(f"API call: get_person with uuid={uuid}")
-    person = await person_service.get_by_id(uuid)
+    person = await person_service.get_by_id(item_id=uuid, request=request)
     if person is None:
         logging.error(f"Person not found with uuid={uuid}")
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
@@ -37,10 +44,11 @@ async def get_person(uuid: str, person_service: PersonService = Depends(get_pers
 
 @router.get("/{uuid}/film", response_model=ItemsModel)
 async def get_films_by_person(uuid: str, request: Request,
-                              person_service: PersonService = Depends(get_person_service)) -> ItemsModel:
+                              person_service: PersonService = Depends(get_person_service)
+                              ) -> ItemsModel:
     logging.info(f"API call: get_films_by_person with uuid={uuid}")
     query_params = request.query_params
-    films = await person_service.get_films_by_person_id(query_params, uuid)
+    films = await person_service.get_films_by_person_id(request=request, query_params=query_params, person_id=uuid)
     if not films:
         logging.error(f"Films not found for person with uuid={uuid}")
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
