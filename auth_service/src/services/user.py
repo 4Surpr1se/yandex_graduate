@@ -14,33 +14,33 @@ from src.models.role import Role
 from src.schemas.user import UserCreate, UserInDB, UpdateResponse
 
 
-async def create_user_service(user_create: UserCreate, db: AsyncSession) -> UserInDB:
+async def create_user_service(user_create: UserCreate, db: AsyncSession, role: str = 'subscriber') -> UserInDB:
     user_dto = jsonable_encoder(user_create)
     user = User(**user_dto)
     db.add(user)
     await db.commit()
     await db.refresh(user)
 
-    subscriber_role = await get_or_create_subscriber_role(db)
+    db_role = await get_or_create_role(db, role=role)
 
-    if subscriber_role not in user.roles:
-        user.roles.append(subscriber_role)
+    if db_role not in user.roles:
+        user.roles.append(db_role)
         await db.commit()
         await db.refresh(user)
 
     return user
 
 
-async def get_or_create_subscriber_role(db: AsyncSession) -> Role:
-    result = await db.execute(select(Role).filter_by(name='subscriber'))
-    subscriber_role = result.scalars().first()
+async def get_or_create_role(db: AsyncSession, role: str) -> Role:
+    result = await db.execute(select(Role).filter_by(name=role))
+    db_role = result.scalars().first()
 
-    if not subscriber_role:
+    if not db_role:
         await seed_roles(db)
-        result = await db.execute(select(Role).filter_by(name='subscriber'))
-        subscriber_role = result.scalars().first()
+        result = await db.execute(select(Role).filter_by(name=role))
+        db_role = result.scalars().first()
 
-    return subscriber_role
+    return db_role
 
 
 async def seed_roles(db: AsyncSession):
