@@ -65,8 +65,6 @@ class FilmsService(BasePluralItemsService):
             }
         }
 
-        logging.info(f"Generated Elasticsearch query body: {body}")
-
         return body
 
     async def get_items(self, request: Request, query_params: QueryParams = None) -> Optional[ItemsModel]:
