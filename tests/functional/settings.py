@@ -13,5 +13,7 @@ class TestSettings(BaseSettings):
     service_host: str = '127.0.0.1'
     service_port: str = '80'
     auth_service_url: str = 'http://127.0.0.1:8000/'
+    test_user_password: str
+    test_user_login: str = 'test'
 
 test_settings = TestSettings() 
