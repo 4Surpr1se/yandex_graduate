@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.services.user import create_user_service, update_login_service, update_password_service
+from src.services.user import create_user_service, update_login_service, update_password_service, delete_user_service
 from src.schemas.user import UserCreate, UserInDB, UpdateResponse
 from src.db.postgres import get_session
 
@@ -35,3 +35,15 @@ async def update_password(new_user_password: str,
     if not res:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     return res
+
+
+@router.delete('/delete-user', status_code=status.HTTP_200_OK)
+async def delete_user(request: Request, db: AsyncSession = Depends(get_session)):
+    access_token = request.cookies.get("access_token")
+    
+    user_deleted = await delete_user_service(db, access_token)
+    
+    if not user_deleted:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired access token.")
+    
+    return {"detail": "User successfully deleted."}
