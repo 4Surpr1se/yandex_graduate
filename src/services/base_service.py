@@ -1,10 +1,13 @@
-from typing import Optional, List, TypeVar
+from http import HTTPStatus
+from typing import Optional, List, TypeVar, Any
 import json
 import hashlib
 
+from fastapi import Request, HTTPException
 from fastapi.datastructures import QueryParams
 from pydantic import BaseModel, RootModel
 
+from services.auth import verify_jwt
 from core.cache_config import cache_config
 from db.abstract_storage import AbstractCache, AbstractDataStorage
 
@@ -25,7 +28,11 @@ class BaseSingleItemService:
         self.model: Optional[BaseModel] = None
         self.service_name: Optional[str] = None
 
-    async def get_by_id(self, item_id: str) -> Optional[BaseModel]:
+    async def get_by_id(self, item_id: str, request: Request) -> Optional[BaseModel]:
+        roles = await self.get_roles(request=request)
+        if not roles:
+            raise HTTPException(status_code=HTTPStatus.METHOD_NOT_ALLOWED,
+                                detail='Not allowed for unauthorized users')
         item = await self._get_item_from_cache(item_id)
         if not item:
             item = await self._get_item_by_id_from_storage(item_id)
@@ -47,6 +54,13 @@ class BaseSingleItemService:
     async def _get_item_from_cache(self, item_id: str) -> Optional[BaseModel]:
         data = await self.cache.get(item_id)
         return self.model.model_validate_json(data) if data else None
+
+    async def get_roles(self, request: Request) -> List[Any] | None:
+        try:
+            response = await verify_jwt(request)
+            return response['roles']
+        except HTTPException:
+            return []
 
 
 class BasePluralItemsService(BaseSingleItemService):
