@@ -24,8 +24,6 @@ class FilmsService(BasePluralItemsService):
         self.service_name = 'films'
 
     def _generate_body(self, query_params: QueryParams) -> dict:
-        logging.info(f"Generating body for query params: {query_params}")
-
         page_size = int(query_params.get('page_size', 50))
         page_number = int(query_params.get('page', 1))
         genre_id = query_params.get('genre')
@@ -83,7 +81,6 @@ class FilmsService(BasePluralItemsService):
 
             if 'subscriber' not in roles:
                 query_params['page'] = '1'
-        logging.info(f"!!!!!!!!Текущие роли {query_params}")
         return await super().get_items(query_params=query_params)
 
 
