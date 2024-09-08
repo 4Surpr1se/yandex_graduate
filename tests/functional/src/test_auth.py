@@ -83,12 +83,15 @@ def test_user_registration_and_update():
         # Доступ к 1 странице
         response = requests.get(FILMS_URL, params={"page_size": "4", "page_number": 1})
         assert response.status_code == 200
-        data = response.json()
-        assert len(data) > 0
+        data_first_page = response.json()
+        assert len(data_first_page) > 0
 
-        # Попытка получить доступ ко 2 странице
+        # Попытка получить доступ ко 2 странице (должен вернуть первую страницу)
         response = requests.get(FILMS_URL, params={"page_size": "4", "page_number": 2})
-        assert response.status_code == 403
+        assert response.status_code == 200
+        data_second_page = response.json()
+        assert data_second_page == data_first_page  # Проверяем, что вернулась та же самая страница
+        assert len(data_second_page) > 0
 
     finally:
         # Удаление пользователя
