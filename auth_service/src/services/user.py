@@ -117,3 +117,20 @@ async def update_user_refresh_token(user: User, refresh_token: str, db: AsyncSes
     db.add(user)
     await db.commit()
     await db.refresh(user)
+    
+async def delete_user_service(db: AsyncSession, access_token: str) -> bool:
+    user = await get_user_by_token(db, access_token)
+    
+    if not user:
+        return False
+
+    await db.delete(user)
+    await db.commit()
+
+    await redis_client.setex(access_token, settings.access_token_expire_minutes * 60, "invalid")
+
+    if user.refresh_token:
+        await redis_client.setex(user.refresh_token, settings.refresh_token_expire_days * 24 * 60 * 60, "invalid")
+
+    return True
+

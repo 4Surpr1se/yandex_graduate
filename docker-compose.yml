@@ -71,11 +71,15 @@ services:
       sh -c "pip install --no-cache-dir -r requirements.txt
       && python3 utils/wait_for_redis.py
       && python3 utils/wait_for_es.py
+      && python3 utils/wait_for_auth.py
       && pytest src"
     depends_on:
       - backend
       - elasticsearch
       - redis
+      - auth_db
+      - auth_redis
+      - auth_service
 
   auth_db:
     image: postgres:16.3
