@@ -45,10 +45,10 @@ def check_films_structure(film):
 
 
 @pytest.fixture(scope='module')
-def existing_film_ids():
+def existing_film_ids(auth_cookies):
     async def get_film_ids():
         async with httpx.AsyncClient() as client:
-            response = await client.get(FILMS_URL, params={'page_size': '5', 'page_number': 1})
+            response = await client.get(FILMS_URL, params={'page_size': '5', 'page_number': 1}, cookies=auth_cookies)
             assert response.status_code == HTTPStatus.OK
             films = response.json()
             return [film['uuid'] for film in films]
@@ -56,12 +56,12 @@ def existing_film_ids():
 
 
 @pytest.fixture(scope='module')
-def existing_person_ids(existing_film_ids):
+def existing_person_ids(existing_film_ids, auth_cookies):
     async def get_person_ids():
         async with httpx.AsyncClient() as client:
             ids = []
             for existing_film_id in existing_film_ids:
-                response = await client.get(f'{FILMS_URL}/{existing_film_id}')
+                response = await client.get(f'{FILMS_URL}/{existing_film_id}',cookies=auth_cookies)
                 assert response.status_code == HTTPStatus.OK
                 films = response.json()
                 actors = films['actors']
@@ -77,12 +77,12 @@ def existing_person_ids(existing_film_ids):
     return asyncio.run(get_person_ids())
 
 
-async def test_get_person_by_id(existing_person_ids):
+async def test_get_person_by_id(existing_person_ids, auth_cookies):
     existing_person_id = existing_person_ids[0]
     url = f'{PERSONS_URL}/{existing_person_id}'
 
     async with httpx.AsyncClient() as client:
-        response = await client.get(url)
+        response = await client.get(url, cookies=auth_cookies)
     assert response.status_code == HTTPStatus.OK
 
     person = response.json()
@@ -91,16 +91,16 @@ async def test_get_person_by_id(existing_person_ids):
     nonexistent_id = str(uuid.uuid4())
     url = f'{PERSONS_URL}/{nonexistent_id}'
     async with httpx.AsyncClient() as client:
-        response = await client.get(url)
+        response = await client.get(url, cookies=auth_cookies)
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
-async def test_get_films_by_person(existing_person_ids):
+async def test_get_films_by_person(existing_person_ids, auth_cookies):
     existing_person_id = existing_person_ids[0]
     url = f'{PERSONS_URL}/{existing_person_id}/film'
 
     async with httpx.AsyncClient() as client:
-        response = await client.get(url)
+        response = await client.get(url, cookies=auth_cookies)
     assert response.status_code == HTTPStatus.OK
 
     films = response.json()
@@ -110,18 +110,18 @@ async def test_get_films_by_person(existing_person_ids):
     nonexistent_id = str(uuid.uuid4())
     url = f'{PERSONS_URL}/{nonexistent_id}/film'
     async with httpx.AsyncClient() as client:
-        response = await client.get(url)
+        response = await client.get(url, cookies=auth_cookies)
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
-async def test_get_person_uses_cache(existing_person_ids, redis_client):
+async def test_get_person_uses_cache(existing_person_ids, redis_client, auth_cookies):
     redis_client.flushdb()
 
     async with httpx.AsyncClient() as client:
         # first request
         start_time = time.time()
         for existing_person_id in existing_person_ids:
-            response = await client.get(f'{PERSONS_URL}/{existing_person_id}')
+            response = await client.get(f'{PERSONS_URL}/{existing_person_id}', cookies=auth_cookies)
             assert response.status_code == HTTPStatus.OK
         end_time = time.time()
         initial_time = end_time - start_time
@@ -129,7 +129,7 @@ async def test_get_person_uses_cache(existing_person_ids, redis_client):
         # second request
         start_time = time.time()
         for existing_person_id in existing_person_ids:
-            response = await client.get(f'{PERSONS_URL}/{existing_person_id}')
+            response = await client.get(f'{PERSONS_URL}/{existing_person_id}', cookies=auth_cookies)
             assert response.status_code == HTTPStatus.OK
         end_time = time.time()
         cached_time = end_time - start_time

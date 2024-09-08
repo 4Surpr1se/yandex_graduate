@@ -19,10 +19,10 @@ BASE_URL = f"http://{test_settings.service_host}:{test_settings.service_port}/ap
         ({"query": "story", "page_size": 10}, 10),
     ]
 )
-async def test_search_films(params, expected_result_count: int):
+async def test_search_films(params, expected_result_count: int, auth_cookies):
     url = f"{BASE_URL}films/search"
     async with httpx.AsyncClient() as client:
-        response = await client.get(url, params=params)
+        response = await client.get(url, params=params, cookies=auth_cookies)
 
     if expected_result_count == 0:
         assert response.status_code == HTTPStatus.NOT_FOUND
@@ -61,29 +61,29 @@ async def test_search_films(params, expected_result_count: int):
         "persons"
     ]
 )
-async def test_search_uses_cache(redis_client, service_name):
+async def test_search_uses_cache(redis_client, service_name, auth_cookies):
     params = {"query": "s", "page_size": "5", "page_number": 1}
     redis_client.flushdb()
 
     async with httpx.AsyncClient() as client:
         start_time = time()
-        response = await client.get(BASE_URL + service_name + "/search", params=params)
+        response = await client.get(BASE_URL + service_name + "/search", params=params, cookies=auth_cookies)
         end_time = time()
         assert response.status_code == HTTPStatus.OK
         initial_time = end_time - start_time
 
         start_time = time()
-        response = await client.get(BASE_URL + service_name + "/search", params=params)
+        response = await client.get(BASE_URL + service_name + "/search", params=params, cookies=auth_cookies)
         end_time = time()
         assert response.status_code == HTTPStatus.OK
         cached_time = end_time - start_time
         assert cached_time < initial_time
 
 
-async def test_persons_search():
+async def test_persons_search(auth_cookies):
     url = f"{BASE_URL}persons/search"
     async with httpx.AsyncClient() as client:
-        response = await client.get(url, params={"query": "Ann", "page_size": 10})
+        response = await client.get(url, params={"query": "Ann", "page_size": 10}, cookies=auth_cookies)
 
     assert response.status_code == HTTPStatus.OK
     data = response.json()
