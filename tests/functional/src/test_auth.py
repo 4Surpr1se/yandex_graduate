@@ -19,8 +19,8 @@ def test_user_registration_and_update():
     
     try:
         # Шаг 1: Регистрация пользователя
-        initial_password = test_settings.test_user_password
-        username = test_settings.test_user_login
+        initial_password = test_settings.test_registration_password
+        username = test_settings.test_registration_login
         registration_data = {
             "login": username,
             "password": initial_password,
@@ -48,14 +48,14 @@ def test_user_registration_and_update():
         assert len(data) > 0
 
         # Шаг 4: Смена логина
-        new_username = test_settings.test_user_login + '1'
+        new_username = test_settings.test_registration_login + '1'
         response = requests.post(f"{test_settings.auth_service_url}/api/users/update-login", params={"new_user_login": new_username}, cookies=cookies)
         assert response.status_code == 200
         
         cookies = user_login(new_username, initial_password)
 
         # Шаг 5: Смена пароля
-        new_password = test_settings.test_user_password[::-1]
+        new_password = test_settings.test_registration_password[::-1]
         response = requests.post(f"{test_settings.auth_service_url}/api/users/update-password", params={"new_user_password": new_password}, cookies=cookies)
         assert response.status_code == 200
 
@@ -83,14 +83,17 @@ def test_user_registration_and_update():
         # Доступ к 1 странице
         response = requests.get(FILMS_URL, params={"page_size": "4", "page_number": 1})
         assert response.status_code == 200
-        data = response.json()
-        assert len(data) > 0
+        data_first_page = response.json()
+        assert len(data_first_page) > 0
 
-        # Попытка получить доступ ко 2 странице
+        # Попытка получить доступ ко 2 странице (должен вернуть первую страницу)
         response = requests.get(FILMS_URL, params={"page_size": "4", "page_number": 2})
-        assert response.status_code == 403
+        assert response.status_code == 200
+        data_second_page = response.json()
+        assert data_second_page == data_first_page  # Проверяем, что вернулась та же самая страница
+        assert len(data_second_page) > 0
 
     finally:
         # Удаление пользователя
-        cookies = user_login(test_settings.test_user_login, test_settings.test_user_password)
+        cookies = user_login(test_settings.test_registration_login, test_settings.test_registration_password)
         requests.delete(f"{test_settings.auth_service_url}/api/users/delete-user", cookies=cookies)

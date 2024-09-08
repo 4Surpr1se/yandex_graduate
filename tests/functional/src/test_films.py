@@ -35,9 +35,9 @@ def check_films_structure(film):
         ({"page_size": "4", "page_number": 10}, 4),
     ]
 )
-async def test_get_films(params, expected_result_count):
+async def test_get_films(params, expected_result_count, auth_cookies):
     async with httpx.AsyncClient() as client:
-        response = await client.get(BASE_URL, params=params)
+        response = await client.get(BASE_URL, params=params, cookies=auth_cookies)
 
     assert response.status_code == HTTPStatus.OK
     data = response.json()
@@ -56,10 +56,10 @@ async def test_get_films(params, expected_result_count):
 
 
 @pytest.fixture(scope="module")
-def existing_film_id():
+def existing_film_id(auth_cookies):
     async def get_film_id():
         async with httpx.AsyncClient() as client:
-            response1 = await client.get(BASE_URL, params={"page_size": "1", "page_number": 1})
+            response1 = await client.get(BASE_URL, params={"page_size": "1", "page_number": 1}, cookies=auth_cookies)
             assert response1.status_code == HTTPStatus.OK
             films1 = response1.json()
             return films1[0]['uuid']
@@ -67,11 +67,11 @@ def existing_film_id():
     return asyncio.run(get_film_id())
 
 
-async def test_get_film_by_id(existing_film_id):
+async def test_get_film_by_id(existing_film_id, auth_cookies):
     url = f"{BASE_URL}/{existing_film_id}"
 
     async with httpx.AsyncClient() as client:
-        response = await client.get(url)
+        response = await client.get(url, cookies=auth_cookies)
 
     assert response.status_code == HTTPStatus.OK
 
@@ -82,6 +82,6 @@ async def test_get_film_by_id(existing_film_id):
     nonexistent_id = str(uuid.uuid4())
     url = f"{BASE_URL}/{nonexistent_id}"
     async with httpx.AsyncClient() as client:
-        response = await client.get(url)
+        response = await client.get(url, cookies=auth_cookies)
 
     assert response.status_code == HTTPStatus.NOT_FOUND
