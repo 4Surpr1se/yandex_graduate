@@ -1,8 +1,12 @@
 from fastapi import APIRouter, Depends, status, HTTPException, Request
+from fastapi_pagination import Page, Params
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.services.user import create_user_service, update_login_service, update_password_service, delete_user_service
+
+from src.services.user import (create_user_service, update_login_service, update_password_service,
+                               delete_user_service, get_login_history_service)
 from src.schemas.user import UserCreate, UserInDB, UpdateResponse
+from src.schemas.user import UserLoginScheme
 from src.db.postgres import get_session
 
 router = APIRouter()
@@ -40,10 +44,23 @@ async def update_password(new_user_password: str,
 @router.delete('/delete-user', status_code=status.HTTP_200_OK)
 async def delete_user(request: Request, db: AsyncSession = Depends(get_session)):
     access_token = request.cookies.get("access_token")
-    
+
     user_deleted = await delete_user_service(db, access_token)
-    
+
     if not user_deleted:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired access token.")
-    
+
     return {"detail": "User successfully deleted."}
+
+
+@router.get('/login-history', response_model=Page[UserLoginScheme])
+async def get_login_history(request:Request, db: AsyncSession= Depends(get_session),
+                            params: Params = Depends()):
+    access_token = request.cookies.get("access_token")
+
+    user_login_history = await get_login_history_service(db, access_token, params)
+
+    if not user_login_history:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No history was found.")
+
+    return user_login_history
