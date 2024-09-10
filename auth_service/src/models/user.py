@@ -23,11 +23,11 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     refresh_token = Column(String, nullable=True)
     
-    roles = relationship('Role', secondary=UserRole.__table__, backref='users', lazy='joined')
+    roles = relationship('Role', secondary=UserRole.__table__, backref='users', lazy='joined', cascade="all, delete")
 
     def __init__(self, login: str, password: str, first_name: str, last_name: str) -> None:
         self.login = login
-        self.password = self.password = generate_password_hash(password)
+        self.password = generate_password_hash(password)
         self.first_name = first_name
         self.last_name = last_name
 
