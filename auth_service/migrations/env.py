@@ -1,14 +1,13 @@
-from logging.config import fileConfig
 import os
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from logging.config import fileConfig
+
 from alembic import context
 from dotenv import load_dotenv
+from sqlalchemy import engine_from_config, pool
 
 from src.core.config import settings
 
 from src.models.user import User
-from src.models.role import Role
 from src.models.user_roles import UserRole
 from src.models.login_history import UserLogin
 

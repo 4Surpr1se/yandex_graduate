@@ -1,8 +1,11 @@
 # models/user_roles.py
+import uuid
+
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
+
 from src.db.postgres import Base
-import uuid
+
 
 class UserRole(Base):
     __tablename__ = 'user_roles'

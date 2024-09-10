@@ -1,20 +1,19 @@
+from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import Response
-from fastapi import HTTPException
 from fastapi_pagination import Page, Params, paginate
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from starlette import status
 from werkzeug.security import generate_password_hash
 
-
 from src.core.config import settings
 from src.db.redis import redis_client
-from src.services.auth import decode_token, create_tokens
-from src.models.user import User
 from src.models.login_history import UserLogin
 from src.models.role import Role
-from src.schemas.user import UserCreate, UserInDB, UpdateResponse
+from src.models.user import User
+from src.schemas.user import UpdateResponse, UserCreate, UserInDB
+from src.services.auth import create_tokens, decode_token
 
 
 async def create_user_service(user_create: UserCreate, db: AsyncSession, role: str = 'subscriber') -> UserInDB:

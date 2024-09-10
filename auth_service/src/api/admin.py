@@ -1,12 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
 from http import HTTPStatus
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.schemas.user import UserRoleRequest
-from src.services.roles import get_roles_service, RolesService
 from src.db.postgres import get_session
+from src.schemas.user import UserRoleRequest
+from src.services.roles import RolesService, get_roles_service
 
 router = APIRouter()
 

@@ -2,14 +2,14 @@
 import uuid
 from datetime import datetime
 
-from src.models.user_roles import UserRole
-from src.models.role import Role
 from sqlalchemy import Boolean, Column, DateTime, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from src.db.postgres import Base
+from src.models.role import Role
+from src.models.user_roles import UserRole
 
 
 class User(Base):
@@ -23,11 +23,11 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     refresh_token = Column(String, nullable=True)
     
-    roles = relationship('Role', secondary=UserRole.__table__, backref='users', lazy='joined')
+    roles = relationship('Role', secondary=UserRole.__table__, backref='users', lazy='joined', cascade="all, delete")
 
     def __init__(self, login: str, password: str, first_name: str, last_name: str) -> None:
         self.login = login
-        self.password = self.password = generate_password_hash(password)
+        self.password = generate_password_hash(password)
         self.first_name = first_name
         self.last_name = last_name
 
