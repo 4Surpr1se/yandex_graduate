@@ -1,15 +1,18 @@
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import Response
 from fastapi import HTTPException
+from fastapi_pagination import Page, Params, paginate
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from starlette import status
 from werkzeug.security import generate_password_hash
 
+
 from src.core.config import settings
 from src.db.redis import redis_client
 from src.services.auth import decode_token, create_tokens
 from src.models.user import User
+from src.models.login_history import UserLogin
 from src.models.role import Role
 from src.schemas.user import UserCreate, UserInDB, UpdateResponse
 
@@ -134,3 +137,15 @@ async def delete_user_service(db: AsyncSession, access_token: str) -> bool:
 
     return True
 
+async def get_login_history_service(db: AsyncSession, access_token: str, params: Params):
+    if not access_token:
+        return
+    user = await get_user_by_token(db=db, access_token=access_token)
+    if not user:
+        return None
+
+    result = await db.execute(select(UserLogin).where(UserLogin.user_id == user.id))
+
+    logins_data = result.scalars().all()
+
+    return paginate(logins_data, params)

@@ -1,12 +1,16 @@
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from src.core.config import settings
+
+from werkzeug.security import check_password_hash
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+
+from src.core.config import settings
 from src.models.user import User
 from src.schemas.auth import Token
 from src.db.redis import redis_client
-from werkzeug.security import check_password_hash
-from sqlalchemy.future import select
+from src.models.login_history import UserLogin
+
 
 def create_access_token(data: dict, roles: list[str], expires_delta: timedelta | None = None):
     to_encode = data.copy()
@@ -26,9 +30,15 @@ def create_refresh_token(data: dict, roles: list[str], expires_delta: timedelta 
 
 async def authenticate_user(login: str, password: str, db: AsyncSession) -> User | None:
     result = await db.execute(select(User).where(User.login == login))
-    user = result.scalars().first() 
+    user = result.scalars().first()
 
     if user and check_password_hash(user.password, password):
+
+        user_login = UserLogin(user_id = user.id)
+        db.add(user_login)
+        await db.commit()
+        await db.refresh(user_login)
+
         return user
     return None
 
