@@ -5,16 +5,14 @@ from alembic import context
 from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 
-# Импорт вашего конфигурационного файла
 from src.core.config import settings
-# Импорт базы данных для метаданных
-from src.db.postgres import Base
-from src.models.role import Role
-# Импорт моделей
+
 from src.models.user import User
 from src.models.user_roles import UserRole
+from src.models.login_history import UserLogin
 
-# Включение конфигурации логирования из alembic.ini
+from src.db.postgres import Base
+
 config = context.config
 fileConfig(config.config_file_name)
 env_path = config.get_main_option("env_file")
@@ -27,7 +25,6 @@ config.set_main_option(
     f'postgresql+psycopg2://{settings.postgres_user}:{settings.postgres_password}@{settings.postgres_host}:{settings.postgres_port}/{settings.postgres_database}'
 )
 
-# Указываем Alembic, где искать метаданные для создания миграций
 target_metadata = Base.metadata
 
 

@@ -60,6 +60,7 @@ services:
       - ./nginx/site.conf:/etc/nginx/conf.d/site.conf
     depends_on:
       - backend
+      - auth_service
     ports:
       - "80:80"
 
@@ -86,8 +87,8 @@ services:
     container_name: auth_postgres
     env_file:
       - auth_service/src/.env
-#    ports:
-#      - "5433:5432"
+    #ports:
+    #  - "5433:5432"
     volumes:
       - ./auth_service/pg_auth_data:/var/lib/postgresql/data
       - ./auth_service/src/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -104,7 +105,8 @@ services:
     env_file:
       - auth_service/src/.env
     volumes:
-      - ./auth_service:/app
+      - ./auth_service:/app  
+      - ./auth_service/migrations:/app/migrations 
     ports:
       - "8000:8000"
     depends_on:
