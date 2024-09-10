@@ -1,15 +1,15 @@
 from datetime import datetime, timedelta
-from jose import JWTError, jwt
 
-from werkzeug.security import check_password_hash
+from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from werkzeug.security import check_password_hash
 
 from src.core.config import settings
-from src.models.user import User
-from src.schemas.auth import Token
 from src.db.redis import redis_client
 from src.models.login_history import UserLogin
+from src.models.user import User
+from src.schemas.auth import Token
 
 
 def create_access_token(data: dict, roles: list[str], expires_delta: timedelta | None = None):

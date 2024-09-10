@@ -1,14 +1,15 @@
-import click
 import asyncio
-from getpass import getpass
-import sys
 import os
+import sys
+from getpass import getpass
+
+import click
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../..')
 
-from src.services.user import create_user_service
-from src.schemas.user import UserCreate
 from src.db.postgres import async_session
+from src.schemas.user import UserCreate
+from src.services.user import create_user_service
 
 
 @click.command()

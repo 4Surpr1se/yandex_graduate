@@ -1,13 +1,13 @@
-from jose import JWTError, jwt
 from uuid import UUID
 
+from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from src.models.role import Role
-from src.schemas.admin import RoleResponse
-from src.models.user import User
 from src.core.config import settings
+from src.models.role import Role
+from src.models.user import User
+from src.schemas.admin import RoleResponse
 
 
 class RolesService:

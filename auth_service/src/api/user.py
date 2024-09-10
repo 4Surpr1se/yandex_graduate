@@ -1,13 +1,13 @@
-from fastapi import APIRouter, Depends, status, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi_pagination import Page, Params
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
-from src.services.user import (create_user_service, update_login_service, update_password_service,
-                               delete_user_service, get_login_history_service)
-from src.schemas.user import UserCreate, UserInDB, UpdateResponse
-from src.schemas.user import UserLoginScheme
 from src.db.postgres import get_session
+from src.schemas.user import (UpdateResponse, UserCreate, UserInDB,
+                              UserLoginScheme)
+from src.services.user import (create_user_service, delete_user_service,
+                               get_login_history_service, update_login_service,
+                               update_password_service)
 
 router = APIRouter()
 

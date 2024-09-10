@@ -1,20 +1,18 @@
-from logging.config import fileConfig
 import os
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from logging.config import fileConfig
+
 from alembic import context
 from dotenv import load_dotenv
+from sqlalchemy import engine_from_config, pool
 
 # Импорт вашего конфигурационного файла
 from src.core.config import settings
-
-# Импорт моделей
-from src.models.user import User
-from src.models.role import Role
-from src.models.user_roles import UserRole
-
 # Импорт базы данных для метаданных
 from src.db.postgres import Base
+from src.models.role import Role
+# Импорт моделей
+from src.models.user import User
+from src.models.user_roles import UserRole
 
 # Включение конфигурации логирования из alembic.ini
 config = context.config

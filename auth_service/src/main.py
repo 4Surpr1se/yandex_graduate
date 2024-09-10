@@ -1,10 +1,11 @@
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 
-from src.db.postgres import create_tables
+from src.api import admin, auth, user
 from src.core.config import settings
-from src.api import user, auth, admin
+from src.db.postgres import create_tables
 
 
 @asynccontextmanager

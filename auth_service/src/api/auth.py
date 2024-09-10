@@ -1,12 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
+from fastapi import (APIRouter, Depends, HTTPException, Request, Response,
+                     status)
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.schemas.auth import UserAuth
-from src.services.auth import authenticate_user, create_tokens, decode_token, create_access_token, create_refresh_token
-from src.services.user import get_user_by_login, update_user_refresh_token
-from src.db.postgres import get_session
 from src.core.config import settings
+from src.db.postgres import get_session
 from src.db.redis import redis_client
+from src.schemas.auth import UserAuth
+from src.services.auth import (authenticate_user, create_access_token,
+                               create_refresh_token, create_tokens,
+                               decode_token)
+from src.services.user import get_user_by_login, update_user_refresh_token
 
 router = APIRouter()
 
