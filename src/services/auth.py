@@ -9,11 +9,14 @@ security = HTTPBearer()
 async def verify_jwt(request: Request):
     token: Optional[str] = request.cookies.get('access_token')
     refresh_token: Optional[str] = request.cookies.get('refresh_token')
-    
-    headers = {"Cookie": request.headers.get("cookie")}
 
-    if not token and refresh_token:
+    x_request_id = request.headers.get("X-Request-Id", "")
     
+    headers = {
+        "Cookie": request.headers.get("cookie"),
+        "X-Request-Id": x_request_id 
+    }
+    if not token and refresh_token:
         new_tokens = await refresh_access_token(headers)
         if new_tokens:
             token = new_tokens.get("access_token")
