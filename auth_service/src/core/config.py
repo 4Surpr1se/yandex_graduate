@@ -13,6 +13,9 @@ class ConfigSettings(BaseSettings):
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
     redis_url: str = "redis_auth:6379/0"
+    google_client_id: str
+    google_client_secret: str
+    
 
     class Config:
         env_file = "../.env"
