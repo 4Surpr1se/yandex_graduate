@@ -7,7 +7,7 @@ from werkzeug.security import check_password_hash
 
 from src.core.config import settings
 from src.db.redis import redis_client
-from src.models.login_history import UserLogin
+from src.models.login_history import UserLogin, Provider
 from src.models.user import User
 from src.schemas.auth import Token
 
@@ -34,7 +34,7 @@ async def authenticate_user(login: str, password: str, db: AsyncSession) -> User
 
     if user and check_password_hash(user.password, password):
 
-        user_login = UserLogin(user_id = user.id)
+        user_login = UserLogin(user_id = user.id, provider=Provider.PASSWORD)
         db.add(user_login)
         await db.commit()
         await db.refresh(user_login)
