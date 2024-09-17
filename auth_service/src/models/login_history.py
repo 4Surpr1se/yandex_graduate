@@ -18,7 +18,7 @@ class UserLogin(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     logged_at = Column(DateTime, default=datetime.utcnow)
-    provider = Column(Enum(Provider), nullable=False)
+    provider = Column(Enum(Provider), nullable=True)
 
     def __init__(self, user_id: UUID, provider: Provider):
         self.user_id = user_id
