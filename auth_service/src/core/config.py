@@ -13,8 +13,9 @@ class ConfigSettings(BaseSettings):
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
     redis_url: str = "redis_auth:6379/0"
+    nginx_url: str = 'http://nginx:80'
     google_client_id: str
-    google_client_secret: str
+    google_secret_file_path: str = 'client_secret_75628477629-k3g90vipls2qpmlnnj1aodn935sg2e49.apps.googleusercontent.com.json'
     
 
     class Config:

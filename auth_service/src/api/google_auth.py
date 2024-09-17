@@ -1,5 +1,4 @@
-from auth_service.src.models.login_history import Provider, UserLogin
-from fastapi import APIRouter, Depends, Request, Response, HTTPException
+from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.responses import RedirectResponse
 
@@ -9,6 +8,7 @@ from google.auth.transport import requests
 
 from src.services.auth import create_tokens
 from src.services.user import get_user_by_login, create_user_service
+from src.models.login_history import Provider, UserLogin
 from src.db.postgres import get_session
 from src.core.config import settings
 
@@ -18,7 +18,7 @@ router = APIRouter()
 flow = Flow.from_client_secrets_file(
     settings.google_secret_file_path,
     scopes=['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile'],
-    redirect_uri='http://localhost:80/api/google/callback'
+    redirect_uri=f'{settings.nginx_url}/api/google/callback',
 )
 
 router = APIRouter()

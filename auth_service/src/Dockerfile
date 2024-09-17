@@ -5,6 +5,9 @@ FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
+# only for oauth testing
+#ENV OAUTHLIB_INSECURE_TRANSPORT=1
+
 # Устанавливаем рабочую директорию
 WORKDIR /auth
 
