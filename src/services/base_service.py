@@ -58,6 +58,8 @@ class BaseSingleItemService:
     async def get_roles(self, request: Request) -> List[Any] | None:
         try:
             response = await verify_jwt(request)
+            if not response or 'roles' not in response:
+                return []
             return response['roles']
         except HTTPException:
             return []
