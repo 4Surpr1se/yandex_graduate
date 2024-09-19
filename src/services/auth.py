@@ -1,14 +1,17 @@
-from fastapi import Depends, HTTPException, Request
-from fastapi.security import HTTPBearer
-from core.config import settings
 from typing import Optional
+
 import requests
+from fastapi import Depends, HTTPException, Request, Response
+from fastapi.security import HTTPBearer
+
+from core.config import settings
 
 security = HTTPBearer()
 
-async def verify_jwt(request: Request):
+async def verify_jwt(request: Request, response: Response):
     token: Optional[str] = request.cookies.get('access_token')
     refresh_token: Optional[str] = request.cookies.get('refresh_token')
+
 
     x_request_id = request.headers.get("X-Request-Id", "")
     
@@ -20,7 +23,10 @@ async def verify_jwt(request: Request):
         new_tokens = await refresh_access_token(headers)
         if new_tokens:
             token = new_tokens.get("access_token")
-            request.cookies["access_token"] = token
+            response.set_cookie(key="access_token", value=token, httponly=True,
+                                max_age=new_tokens["access_token_expires_in"])
+            response.set_cookie(key="refresh_token", value=new_tokens.get("refresh_token"), httponly=True,
+                                max_age=new_tokens["refresh_token_expires_in"])
             headers["Cookie"] = f'access_token={token}; refresh_token={refresh_token}'
         else:
             return {} 
@@ -33,19 +39,25 @@ async def verify_jwt(request: Request):
             return {}
         
         if response.status_code == 401 and refresh_token:
+
             new_tokens = await refresh_access_token(headers)
             if new_tokens:
                 token = new_tokens.get("access_token")
-                request.cookies["access_token"] = token
+                response.set_cookie(key="access_token", value=token, httponly=True,
+                                    max_age=new_tokens["access_token_expires_in"])
+                response.set_cookie(key="refresh_token", value=new_tokens.get("refresh_token"), httponly=True,
+                                    max_age=new_tokens["refresh_token_expires_in"])
                 headers["Cookie"] = f'access_token={token}; refresh_token={refresh_token}'
+
                 try:
                     response = requests.post(auth_service_url, json={"token": token}, headers=headers)
                 except requests.exceptions.RequestException:
                     return {} 
         
         if response.status_code != 200:
+
             try:
-                detail = response.json().get("detail", "Unauthorized")
+                detail = auth_response.json().get("detail", "Unauthorized")
             except ValueError:
                 detail = "Unauthorized"
             

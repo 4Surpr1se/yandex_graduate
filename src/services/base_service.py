@@ -1,16 +1,17 @@
-from http import HTTPStatus
-from typing import Optional, List, TypeVar, Any
-import json
 import hashlib
+import json
+import logging
+from http import HTTPStatus
+from typing import Any, List, Optional, TypeVar
 
-from fastapi import Request, HTTPException
+import requests
+from fastapi import HTTPException, Request, Response
 from fastapi.datastructures import QueryParams
 from pydantic import BaseModel, RootModel
 
-from services.auth import verify_jwt
 from core.cache_config import cache_config
 from db.abstract_storage import AbstractCache, AbstractDataStorage
-
+from services.auth import verify_jwt
 
 T = TypeVar('T', bound=BaseModel)
 
@@ -28,8 +29,8 @@ class BaseSingleItemService:
         self.model: Optional[BaseModel] = None
         self.service_name: Optional[str] = None
 
-    async def get_by_id(self, item_id: str, request: Request) -> Optional[BaseModel]:
-        roles = await self.get_roles(request=request)
+    async def get_by_id(self, item_id: str, request: Request, response: Response) -> Optional[BaseModel]:
+        roles = await self.get_roles(request=request, response=response)  # Передаем Response
         if not roles:
             raise HTTPException(status_code=HTTPStatus.METHOD_NOT_ALLOWED,
                                 detail='Not allowed for unauthorized users')
@@ -55,19 +56,19 @@ class BaseSingleItemService:
         data = await self.cache.get(item_id)
         return self.model.model_validate_json(data) if data else None
 
-    async def get_roles(self, request: Request) -> List[Any] | None:
+    async def get_roles(self, request: Request, response: Response) -> List[Any] | None:
         try:
-            response = await verify_jwt(request)
+            # Передаем Response в verify_jwt для установки обновленных cookie
+            response_data = await verify_jwt(request=request, response=response)
             if not response or 'roles' not in response:
-                return []
-            return response['roles']
+                        return []
+            return response_data['roles']
         except HTTPException:
             return []
 
-
 class BasePluralItemsService(BaseSingleItemService):
 
-    async def get_items(self, query_params: QueryParams = None) -> Optional[ItemsModel]:
+    async def get_items(self, response: Response, query_params: QueryParams = None) -> Optional[ItemsModel]:
         if query_params is None:
             query_params = {}
         cache = self._generate_cache(query_params)

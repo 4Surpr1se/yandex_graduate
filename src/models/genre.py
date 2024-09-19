@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, UUID4, model_validator
+from pydantic import UUID4, BaseModel, model_validator
 
 
 class GenreBase(BaseModel):
