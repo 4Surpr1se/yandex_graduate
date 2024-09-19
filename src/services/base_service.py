@@ -60,6 +60,8 @@ class BaseSingleItemService:
         try:
             # Передаем Response в verify_jwt для установки обновленных cookie
             response_data = await verify_jwt(request=request, response=response)
+            if not response or 'roles' not in response:
+                        return []
             return response_data['roles']
         except HTTPException:
             return []
