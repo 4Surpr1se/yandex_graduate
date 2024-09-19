@@ -22,12 +22,12 @@ async def login(user_auth: UserAuth, response: Response, db: AsyncSession = Depe
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     tokens = await create_tokens(user, db)
-    
+
     response.set_cookie(key="access_token", value=tokens.access_token, httponly=True, max_age=60*settings.access_token_expire_minutes)
     response.set_cookie(key="refresh_token", value=tokens.refresh_token, httponly=True, max_age=60*60*24*settings.refresh_token_expire_days)
-    
+
     response.status_code = status.HTTP_200_OK
     return response
 
@@ -35,22 +35,22 @@ async def login(user_auth: UserAuth, response: Response, db: AsyncSession = Depe
 @router.post('/logout', status_code=status.HTTP_200_OK)
 async def logout(request: Request, response: Response, db: AsyncSession = Depends(get_session)):
     access_token = request.cookies.get("access_token")
-    
+
     if not access_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="No access token provided",
         )
-        
+
     await redis_client.setex(
-        access_token, 
-        settings.access_token_expire_minutes * 60, 
+        access_token,
+        settings.access_token_expire_minutes * 60,
         "invalid"
     )
-    
+
     response.delete_cookie(key="access_token")
     response.delete_cookie(key="refresh_token")
-    
+
     response.status_code = status.HTTP_200_OK
     return {"msg": "Logged out successfully"}
 
@@ -58,7 +58,7 @@ async def logout(request: Request, response: Response, db: AsyncSession = Depend
 @router.post('/verify_token', status_code=status.HTTP_200_OK)
 async def verify_token(request: Request, db: AsyncSession = Depends(get_session)):
     access_token = request.cookies.get("access_token")
-    
+
     if not access_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -79,8 +79,10 @@ async def verify_token(request: Request, db: AsyncSession = Depends(get_session)
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token",
         )
-    
-    return {"login": payload.get("sub", "Unknown"), "roles": payload.get("roles", [])}
+
+    return {"login": payload.get("sub", "Unknown"),
+            "roles": payload.get("roles", []),
+            'user_id': payload.get('user_id')}
 
 
 @router.post('/refresh', status_code=status.HTTP_200_OK)
@@ -110,16 +112,27 @@ async def refresh(request: Request, response: Response, db: AsyncSession = Depen
             detail="Invalid refresh token",
         )
 
-    new_access_token = create_access_token(data={"sub": user.login}, roles=[role.name for role in user.roles])
-    new_refresh_token = create_refresh_token(data={"sub": user.login}, roles=[role.name for role in user.roles])
+    # Генерация новых токенов
+    new_access_token = create_access_token(data={"sub": user.login},
+                                           roles=[role.name for role in user.roles], user_id=user.id)
+    new_refresh_token = create_refresh_token(data={"sub": user.login},
+                                             roles=[role.name for role in user.roles], user_id=user.id)
 
     await update_user_refresh_token(user, new_refresh_token, db)
 
+    access_token_expires_in = settings.access_token_expire_minutes * 60
+    refresh_token_expires_in = settings.refresh_token_expire_days * 24 * 60 * 60
+
     response.set_cookie(key="access_token", value=new_access_token,
-                        httponly=True, max_age=60*settings.access_token_expire_minutes)
+                        httponly=True, max_age=access_token_expires_in)
     response.set_cookie(key="refresh_token", value=new_refresh_token,
-                        httponly=True, max_age=60*60*24*settings.refresh_token_expire_days)
+                        httponly=True, max_age=refresh_token_expires_in)
 
     response.status_code = status.HTTP_200_OK
 
-    return {"access_token": new_access_token}
+    return {
+        "access_token": new_access_token,
+        "refresh_token": new_refresh_token,
+        "access_token_expires_in": access_token_expires_in,  # Время жизни access_token
+        "refresh_token_expires_in": refresh_token_expires_in  # Время жизни refresh_token
+    }
