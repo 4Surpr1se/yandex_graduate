@@ -1,7 +1,6 @@
 import time
 
 from elasticsearch import Elasticsearch
-
 from settings import test_settings
 
 if __name__ == '__main__':

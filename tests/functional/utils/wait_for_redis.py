@@ -1,7 +1,6 @@
 import time
 
 import redis
-
 from settings import test_settings
 
 if __name__ == '__main__':

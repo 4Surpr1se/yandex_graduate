@@ -1,7 +1,8 @@
 from http import HTTPStatus
+
+import httpx
 import pytest
 import redis
-import httpx
 
 from .settings import test_settings
 

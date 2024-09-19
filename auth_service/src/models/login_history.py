@@ -1,15 +1,12 @@
 import uuid
 from datetime import datetime
+from enum import Enum as PyEnum
 
-from sqlalchemy import Column, DateTime, ForeignKey, Enum
-
-from sqlalchemy import (Column, DateTime, ForeignKey, Text, UniqueConstraint,
-                        text)
+from sqlalchemy import (Column, DateTime, Enum, ForeignKey, Text,
+                        UniqueConstraint, text)
 from sqlalchemy.dialects.postgresql import UUID
 
 from src.db.postgres import Base
-from enum import Enum as PyEnum
-
 
 
 class Provider(PyEnum):

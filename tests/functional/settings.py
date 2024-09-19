@@ -1,5 +1,4 @@
 from pydantic_settings import BaseSettings
-
 from testdata.es_mapping import es_index_mapping
 
 

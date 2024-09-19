@@ -9,20 +9,11 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import (BatchSpanProcessor,
                                             ConsoleSpanExporter)
 from requests import Request
+from starlette.middleware.sessions import SessionMiddleware
 
-from src.api import admin, auth, user, google_auth
+from src.api import admin, auth, google_auth, user
 from src.core.config import settings
 from src.db.postgres import create_tables
-
-from fastapi import FastAPI        
-from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider        
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
-from opentelemetry.exporter.jaeger.thrift import JaegerExporter
-from fastapi import FastAPI, Request, status
-from fastapi.responses import ORJSONResponse
-from starlette.middleware.sessions import SessionMiddleware
 
 
 def configure_tracer() -> None:

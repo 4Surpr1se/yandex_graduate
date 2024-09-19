@@ -9,8 +9,7 @@ from werkzeug.security import check_password_hash
 
 from src.core.config import settings
 from src.db.redis import redis_client
-
-from src.models.login_history import UserSignIn, Provider
+from src.models.login_history import Provider, UserSignIn
 from src.models.user import User
 from src.schemas.auth import Token
 

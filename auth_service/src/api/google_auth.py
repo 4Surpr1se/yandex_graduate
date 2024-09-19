@@ -1,16 +1,15 @@
-from fastapi import APIRouter, Depends, Request, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
-
-from google_auth_oauthlib.flow import Flow
-from google.oauth2 import id_token
 from google.auth.transport import requests
+from google.oauth2 import id_token
+from google_auth_oauthlib.flow import Flow
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.services.auth import create_tokens
-from src.services.user import get_user_by_login, create_user_service
-from src.models.login_history import Provider, UserLogin
-from src.db.postgres import get_session
 from src.core.config import settings
+from src.db.postgres import get_session
+from src.models.login_history import Provider, UserLogin
+from src.services.auth import create_tokens
+from src.services.user import create_user_service, get_user_by_login
 
 router = APIRouter()
 

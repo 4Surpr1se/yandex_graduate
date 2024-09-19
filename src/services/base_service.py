@@ -1,10 +1,8 @@
 import hashlib
 import json
-import logging
 from http import HTTPStatus
 from typing import Any, List, Optional, TypeVar
 
-import requests
 from fastapi import HTTPException, Request, Response
 from fastapi.datastructures import QueryParams
 from pydantic import BaseModel, RootModel
