@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta
 import uuid
+from datetime import datetime, timedelta
 
+from fastapi import Request
 from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -8,7 +9,7 @@ from werkzeug.security import check_password_hash
 
 from src.core.config import settings
 from src.db.redis import redis_client
-from src.models.login_history import UserLogin
+from src.models.login_history import UserSignIn
 from src.models.user import User
 from src.schemas.auth import Token
 
@@ -31,13 +32,19 @@ def create_refresh_token(data: dict, roles: list[str], user_id: uuid.UUID, expir
     encoded_jwt = jwt.encode(to_encode, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
     return encoded_jwt
 
-async def authenticate_user(login: str, password: str, db: AsyncSession) -> User | None:
+async def authenticate_user(request: Request, login: str, password: str, db: AsyncSession) -> User | None:
     result = await db.execute(select(User).where(User.login == login))
     user = result.scalars().first()
 
     if user and check_password_hash(user.password, password):
-
-        user_login = UserLogin(user_id = user.id)
+        user_agent = request.headers.get('User-Agent', 'unknown')
+        if 'Mobile' in user_agent:
+            device_type = 'mobile'
+        elif 'Smart' in user_agent:
+            device_type = 'smart'
+        else:
+            device_type = 'web'
+        user_login = UserSignIn(user_id = user.id, user_device_type=device_type)
         db.add(user_login)
         await db.commit()
         await db.refresh(user_login)

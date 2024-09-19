@@ -14,8 +14,8 @@ from src.services.user import get_user_by_login, update_user_refresh_token
 router = APIRouter()
 
 @router.post('/login', status_code=status.HTTP_200_OK)
-async def login(user_auth: UserAuth, response: Response, db: AsyncSession = Depends(get_session)):
-    user = await authenticate_user(user_auth.login, user_auth.password, db)
+async def login(request: Request, user_auth: UserAuth, response: Response, db: AsyncSession = Depends(get_session)):
+    user = await authenticate_user(request, user_auth.login, user_auth.password, db)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
