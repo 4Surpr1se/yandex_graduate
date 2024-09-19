@@ -4,9 +4,9 @@ from http import HTTPStatus
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
 from models.person import Person
-from services.person import PersonService, get_person_service
 from services.base_service import ItemsModel
-from services.search_persons import search_persons_service, SearchPersonService
+from services.person import PersonService, get_person_service
+from services.search_persons import SearchPersonService, search_persons_service
 
 router = APIRouter()
 

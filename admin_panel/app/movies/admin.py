@@ -1,7 +1,8 @@
 from django.contrib import admin
-from .models import Genre, Filmwork, FilmworkGenre, Person, FilmworkPerson, User
-from .custom_filters import RatingFilter
 
+from .custom_filters import RatingFilter
+from .models import (Filmwork, FilmworkGenre, FilmworkPerson, Genre, Person,
+                     User)
 
 
 class GenreFilmworkInline(admin.TabularInline):

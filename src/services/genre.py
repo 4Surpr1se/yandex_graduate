@@ -2,16 +2,16 @@ from functools import lru_cache
 from http import HTTPStatus
 from typing import Optional
 
+from fastapi import Depends, HTTPException, Request, Response
 from pydantic import BaseModel
-
-from fastapi import Depends, Request, HTTPException, Response
 from starlette.datastructures import QueryParams
 
 from db.abstract_storage import AbstractCache, AbstractDataStorage
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.genre import Genre
-from services.base_service import BaseSingleItemService, BasePluralItemsService, ItemsModel
+from services.base_service import (BasePluralItemsService,
+                                   BaseSingleItemService, ItemsModel)
 
 
 class GenreService(BasePluralItemsService):

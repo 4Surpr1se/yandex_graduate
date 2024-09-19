@@ -9,7 +9,7 @@ from werkzeug.security import generate_password_hash
 
 from src.core.config import settings
 from src.db.redis import redis_client
-from src.models.login_history import UserLogin
+from src.models.login_history import UserSignIn
 from src.models.role import Role
 from src.models.user import User
 from src.schemas.user import UpdateResponse, UserCreate, UserInDB
@@ -143,7 +143,7 @@ async def get_login_history_service(db: AsyncSession, access_token: str, params:
     if not user:
         return None
 
-    result = await db.execute(select(UserLogin).where(UserLogin.user_id == user.id))
+    result = await db.execute(select(UserSignIn).where(UserSignIn.user_id == user.id))
 
     logins_data = result.scalars().all()
 

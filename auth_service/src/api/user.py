@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.postgres import get_session
 from src.schemas.user import (UpdateResponse, UserCreate, UserInDB,
-                              UserLoginScheme)
+                              UserSignInScheme)
 from src.services.user import (create_user_service, delete_user_service,
                                get_login_history_service, update_login_service,
                                update_password_service)
@@ -53,7 +53,7 @@ async def delete_user(request: Request, db: AsyncSession = Depends(get_session))
     return {"detail": "User successfully deleted."}
 
 
-@router.get('/login-history', response_model=Page[UserLoginScheme])
+@router.get('/login-history', response_model=Page[UserSignInScheme])
 async def get_login_history(request:Request, db: AsyncSession= Depends(get_session),
                             params: Params = Depends()):
     access_token = request.cookies.get("access_token")

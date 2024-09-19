@@ -3,10 +3,10 @@ from http import HTTPStatus
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
 from models.film import Film
+from services.base_service import ItemsModel
 from services.film import FilmService, get_film_service
 from services.films import FilmsService, get_films_service
 from services.search_films import SearchFilmsService, search_films_service
-from services.base_service import ItemsModel
 
 router = APIRouter()
 

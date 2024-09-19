@@ -1,3 +1,4 @@
+import logging
 from functools import lru_cache
 from typing import List, Optional
 
@@ -10,7 +11,6 @@ from db.elastic import get_elastic
 from db.redis import get_redis
 from models.films import Film
 from services.base_service import BasePluralItemsService, ItemsModel
-import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)

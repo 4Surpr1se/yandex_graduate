@@ -1,9 +1,10 @@
+from typing import Optional
+
+import requests
 from fastapi import Depends, HTTPException, Request, Response
 from fastapi.security import HTTPBearer
-from core.config import settings
-from typing import Optional
-import requests
 
+from core.config import settings
 
 security = HTTPBearer()
 

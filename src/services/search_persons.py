@@ -3,16 +3,17 @@ import json
 from functools import lru_cache
 from http import HTTPStatus
 from typing import List, Optional
-from pydantic import BaseModel
 
-from fastapi import Depends, Request, HTTPException, Response
+from fastapi import Depends, HTTPException, Request, Response
 from fastapi.datastructures import QueryParams
+from pydantic import BaseModel
 
 from db.abstract_storage import AbstractCache, AbstractDataStorage
 from db.elastic import get_elastic
 from db.redis import get_redis
-from services.base_service import BaseSingleItemService, BasePluralItemsService, ItemsModel
 from models.person import Person
+from services.base_service import (BasePluralItemsService,
+                                   BaseSingleItemService, ItemsModel)
 
 
 class SearchPersonService(BasePluralItemsService):
