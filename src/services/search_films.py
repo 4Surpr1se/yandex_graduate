@@ -4,7 +4,7 @@ import json
 from http import HTTPStatus
 from typing import Optional, List
 
-from fastapi import Depends, Request, HTTPException
+from fastapi import Depends, Request, HTTPException, Response
 from fastapi.datastructures import QueryParams
 
 from db.abstract_storage import AbstractCache, AbstractDataStorage
@@ -62,15 +62,15 @@ class SearchFilmsService(FilmsService):
         }
         return body
 
-    async def get_items(self, request: Request, query_params: QueryParams = None) -> Optional[ItemsModel]:
-        roles = await self.get_roles(request)
+    async def get_items(self, request: Request, response: Response, query_params: QueryParams = None
+                        ) -> Optional[ItemsModel]:
+        roles = await self.get_roles(request=request, response=response)
 
         if not roles:
             raise HTTPException(status_code=HTTPStatus.METHOD_NOT_ALLOWED,
                                 detail='Not allowed for unauthorized users')
 
-
-        return await super().get_items(request=request, query_params=query_params)
+        return await super().get_items(request=request, response=response, query_params=query_params)
 
 
 @lru_cache()

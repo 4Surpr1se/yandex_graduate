@@ -2,7 +2,7 @@ from functools import lru_cache
 from http import HTTPStatus
 from typing import Optional, List
 
-from fastapi import Depends, Request, HTTPException
+from fastapi import Depends, Request, HTTPException, Response
 from fastapi.datastructures import QueryParams
 from pydantic import BaseModel
 
@@ -59,8 +59,9 @@ class PersonService(BaseSingleItemService):
         self.model: BaseModel = Person
         self.service_name = 'persons'
 
-    async def get_films_by_person_id(self, request: Request,  query_params: QueryParams, person_id: str) -> Optional[ItemsModel]:
-        roles = await self.get_roles(request)
+    async def get_films_by_person_id(self, request: Request, response: Response, query_params: QueryParams,
+                                     person_id: str) -> Optional[ItemsModel]:
+        roles = await self.get_roles(request=request, response=response)
 
         if not roles:
             raise HTTPException(status_code=HTTPStatus.METHOD_NOT_ALLOWED,
@@ -68,7 +69,7 @@ class PersonService(BaseSingleItemService):
 
         query_params = QueryParams(**query_params, person_id=person_id)
         films_by_person = FilmsByPersonId(self.cache, self.storage)
-        films = await films_by_person.get_items(request=request, query_params=query_params)
+        films = await films_by_person.get_items(request=request, response=response, query_params=query_params)
         return films.root if films else None
 
 

@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import List, Optional
 
-from fastapi import Depends, Request
+from fastapi import Depends, Request, Response
 from fastapi.datastructures import QueryParams
 from pydantic import BaseModel
 
@@ -67,8 +67,9 @@ class FilmsService(BasePluralItemsService):
 
         return body
 
-    async def get_items(self, request: Request, query_params: QueryParams = None) -> Optional[ItemsModel]:
-        roles = await self.get_roles(request)
+    async def get_items(self, request: Request, response: Response, query_params: QueryParams = None) -> Optional[
+        ItemsModel]:
+        roles = await self.get_roles(request=request, response=response)
         query_params = dict(query_params)
         query_params['roles'] = roles
         if 'premium' not in roles and 'admin' not in roles:
@@ -79,7 +80,7 @@ class FilmsService(BasePluralItemsService):
 
             if 'subscriber' not in roles:
                 query_params['page'] = '1'
-        return await super().get_items(query_params=query_params)
+        return await super().get_items(response=response, query_params=query_params)
 
 
 @lru_cache()
