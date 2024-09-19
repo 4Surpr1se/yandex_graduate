@@ -1,22 +1,19 @@
 from contextlib import asynccontextmanager
 
-from requests import Request
-
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.responses import ORJSONResponse
+from opentelemetry import trace
+from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import (BatchSpanProcessor,
+                                            ConsoleSpanExporter)
+from requests import Request
 
 from src.api import admin, auth, user
 from src.core.config import settings
 from src.db.postgres import create_tables
 
-from fastapi import FastAPI        
-from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider        
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
-from opentelemetry.exporter.jaeger.thrift import JaegerExporter
-from fastapi import FastAPI, Request, status
-from fastapi.responses import ORJSONResponse
 
 def configure_tracer() -> None:
     trace.set_tracer_provider(TracerProvider())
@@ -54,11 +51,11 @@ app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 
 
-@app.middleware('http')
-async def before_request(request: Request, call_next):
-    response = await call_next(request)
-    request_id = request.headers.get('X-Request-Id')
-    if not request_id:
-        return ORJSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={'detail': 'X-Request-Id is required'})
-    return response 
+# @app.middleware('http')
+# async def before_request(request: Request, call_next):
+#     response = await call_next(request)
+#     request_id = request.headers.get('X-Request-Id')
+#     if not request_id:
+#         return ORJSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={'detail': 'X-Request-Id is required'})
+#     return response
 

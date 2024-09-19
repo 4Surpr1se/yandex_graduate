@@ -3,8 +3,8 @@ from http import HTTPStatus
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
 from models.genre import Genre
-from services.genre import GenreService, get_genre_service
 from services.base_service import ItemsModel
+from services.genre import GenreService, get_genre_service
 
 router = APIRouter()
 

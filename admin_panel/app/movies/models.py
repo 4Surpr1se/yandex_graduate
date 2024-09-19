@@ -1,10 +1,12 @@
-from django.db import models
-from .mixin import TimeStampedMixin, UUIDMixin
-from django.core.validators import MinValueValidator, MaxValueValidator
-from django.contrib.auth.models import AbstractBaseUser
-from django.utils.translation import gettext_lazy as _
-from .managers import MyUserManager
 import uuid
+
+from django.contrib.auth.models import AbstractBaseUser
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from django.utils.translation import gettext_lazy as _
+
+from .managers import MyUserManager
+from .mixin import TimeStampedMixin, UUIDMixin
 
 
 class User(AbstractBaseUser):

@@ -1,5 +1,6 @@
-from pydantic import BaseModel, model_validator, RootModel, UUID4
 from typing import List
+
+from pydantic import UUID4, BaseModel, RootModel, model_validator
 
 
 class Film(BaseModel):

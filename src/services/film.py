@@ -1,13 +1,13 @@
 from functools import lru_cache
 
-from pydantic import BaseModel
 from fastapi import Depends
+from pydantic import BaseModel
 
-from models.film import Film
-from services.base_service import BaseSingleItemService
 from db.abstract_storage import AbstractCache, AbstractDataStorage
 from db.elastic import get_elastic
 from db.redis import get_redis
+from models.film import Film
+from services.base_service import BaseSingleItemService
 
 
 class FilmService(BaseSingleItemService):
