@@ -10,9 +10,19 @@ from opentelemetry.sdk.trace.export import (BatchSpanProcessor,
                                             ConsoleSpanExporter)
 from requests import Request
 
-from src.api import admin, auth, user
+from src.api import admin, auth, user, google_auth
 from src.core.config import settings
 from src.db.postgres import create_tables
+
+from fastapi import FastAPI        
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider        
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
+from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+from fastapi import FastAPI, Request, status
+from fastapi.responses import ORJSONResponse
+from starlette.middleware.sessions import SessionMiddleware
 
 
 def configure_tracer() -> None:
@@ -44,12 +54,13 @@ app = FastAPI(
     lifespan=lifespan
 )
 FastAPIInstrumentor.instrument_app(app) 
+app.add_middleware(SessionMiddleware, secret_key="your-secret-key")
 
 # Подключаем маршруты
 app.include_router(user.router, prefix="/api/users", tags=["users"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
-
+app.include_router(google_auth.router, prefix="/api/google", tags=["google"])
 
 @app.middleware('http')
 async def before_request(request: Request, call_next):
@@ -58,4 +69,6 @@ async def before_request(request: Request, call_next):
     if not request_id:
         return ORJSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={'detail': 'X-Request-Id is required'})
     return response
+
+
 

@@ -9,7 +9,8 @@ from werkzeug.security import check_password_hash
 
 from src.core.config import settings
 from src.db.redis import redis_client
-from src.models.login_history import UserSignIn
+
+from src.models.login_history import UserSignIn, Provider
 from src.models.user import User
 from src.schemas.auth import Token
 
@@ -37,6 +38,8 @@ async def authenticate_user(request: Request, login: str, password: str, db: Asy
     user = result.scalars().first()
 
     if user and check_password_hash(user.password, password):
+
+        user_login = UserLogin(user_id = user.id, provider=Provider.PASSWORD)
         user_agent = request.headers.get('User-Agent', 'unknown')
         if 'Mobile' in user_agent:
             device_type = 'mobile'
