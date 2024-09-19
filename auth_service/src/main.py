@@ -1,9 +1,14 @@
 from contextlib import asynccontextmanager
 
-from requests import Request
-
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.responses import ORJSONResponse
+from opentelemetry import trace
+from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import (BatchSpanProcessor,
+                                            ConsoleSpanExporter)
+from requests import Request
 
 from src.api import admin, auth, user, google_auth
 from src.core.config import settings
@@ -18,6 +23,7 @@ from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 from fastapi import FastAPI, Request, status
 from fastapi.responses import ORJSONResponse
 from starlette.middleware.sessions import SessionMiddleware
+
 
 def configure_tracer() -> None:
     trace.set_tracer_provider(TracerProvider())
@@ -62,7 +68,7 @@ async def before_request(request: Request, call_next):
     request_id = request.headers.get('X-Request-Id')
     if not request_id:
         return ORJSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={'detail': 'X-Request-Id is required'})
-    return response 
+    return response
 
 
 

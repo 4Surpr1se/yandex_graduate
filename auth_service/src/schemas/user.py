@@ -29,7 +29,7 @@ class UpdateResponse(BaseModel):
     success: bool
     message: str
 
-class UserLoginScheme(BaseModel):
+class UserSignInScheme(BaseModel):
     id: UUID
     logged_at: datetime
 

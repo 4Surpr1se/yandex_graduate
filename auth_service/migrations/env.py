@@ -6,12 +6,10 @@ from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 
 from src.core.config import settings
-
+from src.db.postgres import Base
+from src.models.login_history import UserSignIn
 from src.models.user import User
 from src.models.user_roles import UserRole
-from src.models.login_history import UserLogin
-
-from src.db.postgres import Base
 
 config = context.config
 fileConfig(config.config_file_name)

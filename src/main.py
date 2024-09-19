@@ -1,23 +1,20 @@
 from contextlib import asynccontextmanager
 
 from elasticsearch import AsyncElasticsearch
-from fastapi import FastAPI, Depends
+from fastapi import Depends, FastAPI, Request, status
 from fastapi.responses import ORJSONResponse
+from opentelemetry import trace
+from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import (BatchSpanProcessor,
+                                            ConsoleSpanExporter)
 from redis.asyncio import Redis
 
 from api.v1 import films, genres, persons
 from core.config import settings
 from db import elastic, redis
 from services.auth import verify_jwt
-
-from fastapi import FastAPI        
-from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider        
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
-from opentelemetry.exporter.jaeger.thrift import JaegerExporter
-from fastapi import FastAPI, Request, status
-from fastapi.responses import ORJSONResponse
 
 
 @asynccontextmanager

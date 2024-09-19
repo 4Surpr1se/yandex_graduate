@@ -1,5 +1,7 @@
+import uuid
 from datetime import datetime, timedelta
 
+from fastapi import Request
 from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -7,34 +9,45 @@ from werkzeug.security import check_password_hash
 
 from src.core.config import settings
 from src.db.redis import redis_client
-from src.models.login_history import UserLogin, Provider
+
+from src.models.login_history import UserSignIn, Provider
 from src.models.user import User
 from src.schemas.auth import Token
 
 
-def create_access_token(data: dict, roles: list[str], expires_delta: timedelta | None = None):
+def create_access_token(data: dict, roles: list[str], user_id: uuid.UUID, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     to_encode["roles"] = roles
+    to_encode['user_id'] = str(user_id)
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=settings.access_token_expire_minutes))
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
     return encoded_jwt
 
-def create_refresh_token(data: dict, roles: list[str], expires_delta: timedelta | None = None):
+def create_refresh_token(data: dict, roles: list[str], user_id: uuid.UUID, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     to_encode["roles"] = roles
+    to_encode['user_id'] = str(user_id)
     expire = datetime.utcnow() + (expires_delta or timedelta(days=settings.refresh_token_expire_days))
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
     return encoded_jwt
 
-async def authenticate_user(login: str, password: str, db: AsyncSession) -> User | None:
+async def authenticate_user(request: Request, login: str, password: str, db: AsyncSession) -> User | None:
     result = await db.execute(select(User).where(User.login == login))
     user = result.scalars().first()
 
     if user and check_password_hash(user.password, password):
 
         user_login = UserLogin(user_id = user.id, provider=Provider.PASSWORD)
+        user_agent = request.headers.get('User-Agent', 'unknown')
+        if 'Mobile' in user_agent:
+            device_type = 'mobile'
+        elif 'Smart' in user_agent:
+            device_type = 'smart'
+        else:
+            device_type = 'web'
+        user_login = UserSignIn(user_id = user.id, user_device_type=device_type)
         db.add(user_login)
         await db.commit()
         await db.refresh(user_login)
@@ -45,8 +58,8 @@ async def authenticate_user(login: str, password: str, db: AsyncSession) -> User
 async def create_tokens(user: User, db: AsyncSession) -> Token:
     roles = [role.name for role in user.roles]
 
-    access_token = create_access_token(data={"sub": user.login}, roles=roles)
-    refresh_token = create_refresh_token(data={"sub": user.login}, roles=roles)
+    access_token = create_access_token(data={"sub": user.login}, roles=roles, user_id=user.id)
+    refresh_token = create_refresh_token(data={"sub": user.login}, roles=roles, user_id=user.id)
 
     user.refresh_token = refresh_token
     db.add(user)
