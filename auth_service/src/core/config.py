@@ -16,6 +16,9 @@ class ConfigSettings(BaseSettings):
     google_client_id: str
     google_secret_file_path: str = 'client_secret_75628477629-k3g90vipls2qpmlnnj1aodn935sg2e49.apps.googleusercontent.com.json'
     redis_url: str = "redis://auth_redis:6379/0"
+    enable_tracer: bool = True
+    agent_host_name: str
+    agent_port: int
 
 
     class Config:

@@ -1,6 +1,7 @@
 import http
 import json
 import uuid
+import logging
 from enum import StrEnum, auto
 
 import requests
@@ -9,6 +10,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import BaseBackend
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 class Roles(StrEnum):
@@ -36,7 +38,8 @@ class CustomBackend(BaseBackend):
             user.is_staff = 'admin' in data.get('roles')
             user.is_active = data.get('is_active', True)
             user.save()
-        except Exception:
+        except Exception as e:
+            logger.error(f'Authentication failed with exception: {e}')
             return None
 
         return user

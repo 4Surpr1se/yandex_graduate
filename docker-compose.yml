@@ -121,6 +121,11 @@ services:
     volumes:
       - ./auth_service/pg_auth_data:/var/lib/postgresql/data
       - ./auth_service/src/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U app -d auth" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   auth_redis:
     image: redis:7.4.0
@@ -139,7 +144,8 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - auth_db
+      auth_db:
+        condition: service_healthy
 
   jaeger:
     image: jaegertracing/all-in-one:latest

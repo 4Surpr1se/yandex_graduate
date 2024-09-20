@@ -21,8 +21,8 @@ def configure_tracer() -> None:
     trace.get_tracer_provider().add_span_processor(
         BatchSpanProcessor(
             JaegerExporter(
-                agent_host_name='localhost',
-                agent_port=6831,
+                settings.agent_host_name,
+                settings.agent_port,
             )
         )
     )
@@ -35,7 +35,8 @@ async def lifespan(app: FastAPI):
     await create_tables()
     yield
 
-configure_tracer()
+if settings.enable_tracer:
+    configure_tracer()
 
 app = FastAPI(
     title=settings.project_name,

@@ -56,9 +56,8 @@ class BaseSingleItemService:
 
     async def get_roles(self, request: Request, response: Response) -> List[Any] | None:
         try:
-            # Передаем Response в verify_jwt для установки обновленных cookie
             response_data = await verify_jwt(request=request, response=response)
-            if not response or 'roles' not in response:
+            if not response_data or 'roles' not in response_data:
                         return []
             return response_data['roles']
         except HTTPException:
