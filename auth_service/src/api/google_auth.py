@@ -1,3 +1,6 @@
+import logging
+from http import HTTPStatus
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from google.auth.transport import requests
@@ -11,6 +14,7 @@ from src.models.login_history import Provider, UserLogin
 from src.services.auth import create_tokens
 from src.services.user import create_user_service, get_user_by_login
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -19,8 +23,6 @@ flow = Flow.from_client_secrets_file(
     scopes=['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile'],
     redirect_uri=f'{settings.nginx_url}/api/google/callback',
 )
-
-router = APIRouter()
 
 @router.get("/login")
 async def login():
@@ -56,4 +58,5 @@ async def auth_google_callback(request: Request, db: AsyncSession = Depends(get_
 
         return response
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f'Google auth failed with exception: {e}')
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=str(e))
