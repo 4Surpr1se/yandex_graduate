@@ -38,7 +38,6 @@ async def authenticate_user(request: Request, login: str, password: str, db: Asy
 
     if user and check_password_hash(user.password, password):
 
-        user_login = UserLogin(user_id = user.id, provider=Provider.PASSWORD)
         user_agent = request.headers.get('User-Agent', 'unknown')
         if 'Mobile' in user_agent:
             device_type = 'mobile'
@@ -46,12 +45,14 @@ async def authenticate_user(request: Request, login: str, password: str, db: Asy
             device_type = 'smart'
         else:
             device_type = 'web'
-        user_login = UserSignIn(user_id = user.id, user_device_type=device_type)
-        db.add(user_login)
+
+        user_sign_in = UserSignIn(user_id=user.id, user_device_type=device_type, provider=Provider.PASSWORD)
+        db.add(user_sign_in)
         await db.commit()
-        await db.refresh(user_login)
+        await db.refresh(user_sign_in)
 
         return user
+
     return None
 
 async def create_tokens(user: User, db: AsyncSession) -> Token:
