@@ -9,6 +9,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from src.db.postgres import Base
 from src.models.role import Role
+from src.models.social_account import UserSocialAccount
 from src.models.user_roles import UserRole
 
 
@@ -24,6 +25,8 @@ class User(Base):
     refresh_token = Column(String, nullable=True)
     
     roles = relationship('Role', secondary=UserRole.__table__, backref='users', lazy='joined', cascade="all, delete")
+    
+    social_accounts = relationship("UserSocialAccount", back_populates="user", cascade="all, delete")
 
     def __init__(self, login: str, password: str, first_name: str, last_name: str) -> None:
         self.login = login
