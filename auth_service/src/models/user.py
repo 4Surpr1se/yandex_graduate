@@ -9,7 +9,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from src.db.postgres import Base
 from src.models.role import Role
-from src.models.social_account import UserSocialAccount
 from src.models.user_roles import UserRole
 
 
