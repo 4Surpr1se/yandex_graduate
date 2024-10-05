@@ -9,7 +9,7 @@ from sqlalchemy import select
 from src.core.config import settings
 from src.db.postgres import get_session
 from src.models.social_account import UserSocialAccount
-from src.models.login_history import Provider, UserLogin
+from src.models.login_history import Provider, UserSignIn
 from src.services.auth import create_tokens
 from src.services.user import create_user_service, get_user_by_login
 
@@ -84,7 +84,7 @@ async def auth_callback(request: Request, provider: str = Query(...), db: AsyncS
 
         tokens = await create_tokens(user, db)
 
-        user_login = UserLogin(user_id = user.id, provider=Provider.GOOGLE)
+        user_login = UserSignIn(user_id = user.id, provider=Provider.GOOGLE)
         db.add(user_login)
         await db.commit()
         await db.refresh(user_login)

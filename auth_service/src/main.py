@@ -52,7 +52,7 @@ app.add_middleware(SessionMiddleware, secret_key="your-secret-key")
 app.include_router(user.router, prefix="/api/users", tags=["users"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
-app.include_router(google_auth.router, prefix="/api/oauth", tags=["oauth"])
+app.include_router(oauth.router, prefix="/api/oauth", tags=["oauth"])
 
 @app.middleware('http')
 async def before_request(request: Request, call_next):
