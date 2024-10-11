@@ -27,16 +27,20 @@ def create_clickhouse_table():
         ORDER BY timestamp
     ''')
 
-def insert_data_to_clickhouse(user_id, event_type, event_data):
+def insert_data_to_clickhouse(data_list):
     try:
         clickhouse_client.execute('''
             INSERT INTO user_events (user_id, event_type, event_data, timestamp)
-            VALUES (%(user_id)s, %(event_type)s, %(event_data)s, now())
-        ''', {'user_id': user_id, 'event_type': event_type, 'event_data': json.dumps(event_data)})
+            VALUES
+        ''', data_list)
+        logging.info("Вставлено сообщений", len(data_list))
     except Exception as e:
         logging.error(f"Ошибка при вставке данных в ClickHouse: {e}")
 
 def consume_kafka_messages():
+    batch_size = 1000
+    data_batch = []
+
     try:
         consumer = KafkaConsumer(
             settings.kafka_clicks_topic,
@@ -60,7 +64,21 @@ def consume_kafka_messages():
             else:
                 event_type = 'custom_event'
 
-            insert_data_to_clickhouse(user_id, event_type, data)
+            data_batch.append((
+                user_id,
+                event_type,
+                json.dumps(data),
+                'now()'  # Вставка текущего времени
+            ))
+
+            # Если достигнут размер пакета, отправьте данные в ClickHouse
+            if len(data_batch) >= batch_size:
+                insert_data_to_clickhouse(data_batch)
+                data_batch = []  # Очистить пакет после вставки
+
+        # Вставка оставшихся данных, если они есть
+        if data_batch:
+            insert_data_to_clickhouse(data_batch)
 
     except KafkaError as e:
         logging.error(f"Ошибка при чтении данных из Kafka: {e}")
