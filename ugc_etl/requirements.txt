@@ -1,0 +1,7 @@
+APScheduler==3.10.4
+clickhouse-driver==0.2.9
+kafka-python==2.0.2
+pytz==2024.2
+schedule==1.2.2
+six==1.16.0
+tzlocal==5.2
