@@ -35,6 +35,8 @@ def insert_data_to_clickhouse(user_id, event_type, event_data):
         ''', {'user_id': user_id, 'event_type': event_type, 'event_data': json.dumps(event_data)})
     except Exception as e:
         logging.error(f"Ошибка при вставке данных в ClickHouse: {e}")
+        return False
+    return True
 
 def consume_kafka_messages():
     try:
@@ -45,7 +47,7 @@ def consume_kafka_messages():
             bootstrap_servers=settings.kafka_bootstrap_servers,
             value_deserializer=lambda v: json.loads(v.decode('utf-8')),
             auto_offset_reset='earliest',
-            enable_auto_commit=True
+            enable_auto_commit=False
         )
 
         for message in consumer:
@@ -59,7 +61,10 @@ def consume_kafka_messages():
             else:
                 event_type = 'custom_event'
 
-            insert_data_to_clickhouse(user_id, event_type, data)
+            if insert_data_to_clickhouse(user_id, event_type, data):
+                consumer.commit()
+            else:
+                logging.error("Не удалось вставить данные в ClickHouse, сообщение не будет коммитировано")
 
     except KafkaError as e:
         logging.error(f"Ошибка при чтении данных из Kafka: {e}")
