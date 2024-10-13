@@ -2,12 +2,11 @@ import json
 import logging
 from time import sleep
 
+from config import settings
 from kafka import KafkaProducer
 from kafka.admin import KafkaAdminClient, NewTopic
 from kafka.errors import KafkaError, KafkaTimeoutError, TopicAlreadyExistsError
 from tenacity import retry, stop_after_attempt, wait_exponential
-
-from config import settings
 
 logging.basicConfig(level=logging.INFO)
 

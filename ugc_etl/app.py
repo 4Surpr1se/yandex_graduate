@@ -1,12 +1,13 @@
+import json
 import logging
+from datetime import datetime
+from typing import Dict, List
+
+from apscheduler.schedulers.blocking import BlockingScheduler
+from clickhouse_driver import Client
+from config import settings
 from kafka import KafkaConsumer
 from kafka.errors import KafkaError
-from clickhouse_driver import Client
-from apscheduler.schedulers.blocking import BlockingScheduler
-from config import settings
-from datetime import datetime
-import json
-from typing import List, Dict
 
 logging.basicConfig(level=logging.INFO)
 

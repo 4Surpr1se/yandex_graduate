@@ -1,7 +1,7 @@
 import http
 import json
-import uuid
 import logging
+import uuid
 from enum import StrEnum, auto
 
 import requests

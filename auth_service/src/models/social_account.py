@@ -1,8 +1,9 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Enum
-from sqlalchemy.orm import relationship
-from src.models.user import User
-from src.models.login_history import Provider
+from sqlalchemy import Column, Enum, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
+
+from src.models.login_history import Provider
+from src.models.user import User
 
 Base = declarative_base()
 

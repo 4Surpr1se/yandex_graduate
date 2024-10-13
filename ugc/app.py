@@ -1,7 +1,8 @@
-import logging
 import asyncio
-from flask import Flask, jsonify, request
+import logging
+
 from config import settings
+from flask import Flask, jsonify, request
 from kafka_producer import create_topics, kafka_producer
 
 logging.basicConfig(level=logging.INFO)
