@@ -16,6 +16,9 @@ clickhouse_client = Client(
     database=settings.clickhouse_database
 )
 
+BATCH_SIZE = 1000
+batch_data = []
+
 def create_clickhouse_table():
     clickhouse_client.execute('''
         CREATE TABLE IF NOT EXISTS user_events (
@@ -27,16 +30,16 @@ def create_clickhouse_table():
         ORDER BY timestamp
     ''')
 
-def insert_data_to_clickhouse(user_id, event_type, event_data):
+def insert_batch_to_clickhouse(batch_data):
     try:
         clickhouse_client.execute('''
             INSERT INTO user_events (user_id, event_type, event_data, timestamp)
-            VALUES (%(user_id)s, %(event_type)s, %(event_data)s, now())
-        ''', {'user_id': user_id, 'event_type': event_type, 'event_data': json.dumps(event_data)})
+            VALUES
+        ''', batch_data)
+        return True
     except Exception as e:
         logging.error(f"Ошибка при вставке данных в ClickHouse: {e}")
         return False
-    return True
 
 def consume_kafka_messages():
     try:
@@ -50,6 +53,8 @@ def consume_kafka_messages():
             enable_auto_commit=False
         )
 
+        global batch_data
+
         for message in consumer:
             data = message.value
 
@@ -61,10 +66,20 @@ def consume_kafka_messages():
             else:
                 event_type = 'custom_event'
 
-            if insert_data_to_clickhouse(user_id, event_type, data):
-                consumer.commit()
-            else:
-                logging.error("Не удалось вставить данные в ClickHouse, сообщение не будет коммитировано")
+            batch_data.append({
+                'user_id': user_id,
+                'event_type': event_type,
+                'event_data': json.dumps(data),
+                'timestamp': 'now()'
+            })
+
+            # Выполняем вставку после накопления 1000 записей
+            if len(batch_data) >= BATCH_SIZE:
+                if insert_batch_to_clickhouse(batch_data):
+                    consumer.commit()
+                    batch_data = []
+                else:
+                    logging.error("Не удалось вставить батч в ClickHouse, сообщения не будут коммитированы")
 
     except KafkaError as e:
         logging.error(f"Ошибка при чтении данных из Kafka: {e}")
