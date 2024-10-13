@@ -36,11 +36,13 @@ def insert_batch_to_clickhouse(batch_data: List[Dict]) -> bool:
         clickhouse_client.execute('''
             INSERT INTO user_events (user_id, event_type, event_data, timestamp)
             VALUES
-        ''', batch_data)
+        ''', [{'user_id': data['user_id'], 'event_type': data['event_type'], 
+               'event_data': data['event_data'], 'timestamp': 'now()'} for data in batch_data])
         return True
     except Exception as e:
         logging.error(f"Ошибка при вставке данных в ClickHouse: {e}")
         return False
+
 
 def consume_kafka_messages() -> None:
     try:
