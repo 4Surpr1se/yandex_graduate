@@ -1,18 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import RedirectResponse
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token as google_id_token
 from google_auth_oauthlib.flow import Flow as GoogleFlow
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.config import settings
 from src.db.postgres import get_session
-from src.models.social_account import UserSocialAccount
 from src.models.login_history import Provider, UserSignIn
+from src.models.social_account import UserSocialAccount
 from src.services.auth import create_tokens
 from src.services.user import create_user_service, get_user_by_login
-
 
 router = APIRouter()
 
