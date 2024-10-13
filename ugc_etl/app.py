@@ -4,6 +4,7 @@ from kafka.errors import KafkaError
 from clickhouse_driver import Client
 from apscheduler.schedulers.blocking import BlockingScheduler
 from config import settings
+from datetime import datetime
 import json
 from typing import List, Dict
 
@@ -37,7 +38,7 @@ def insert_batch_to_clickhouse(batch_data: List[Dict]) -> bool:
             INSERT INTO user_events (user_id, event_type, event_data, timestamp)
             VALUES
         ''', [{'user_id': data['user_id'], 'event_type': data['event_type'], 
-               'event_data': data['event_data'], 'timestamp': 'now()'} for data in batch_data])
+               'event_data': data['event_data'], 'timestamp': datetime.now()} for data in batch_data])
         return True
     except Exception as e:
         logging.error(f"Ошибка при вставке данных в ClickHouse: {e}")
@@ -53,7 +54,8 @@ def consume_kafka_messages() -> None:
             bootstrap_servers=settings.kafka_bootstrap_servers,
             value_deserializer=lambda v: json.loads(v.decode('utf-8')),
             auto_offset_reset='earliest',
-            enable_auto_commit=False
+            enable_auto_commit=False,
+            group_id='ugc_etl' 
         )
 
         global batch_data
