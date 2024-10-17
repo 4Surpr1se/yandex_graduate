@@ -66,6 +66,7 @@ jobs:
           -d chat_id="$chat_id" \
           -d text="CI pipeline passed successfully for pull request #${{ github.event.pull_request.number }}"
           done
+          
     - name: Send failure message to Telegram
       if: failure()
       env:
