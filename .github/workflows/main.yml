@@ -1,0 +1,70 @@
+name: Python CI
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  lint-and-typecheck:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install wemake-python-styleguide mypy pylint pylint-json2html
+
+    - name: Run wemake-python-styleguide (flake8 replacement)
+      run: |
+        flake8 --format=html --htmldir=flake8-report .
+
+    - name: Run mypy type check
+      run: |
+        mypy . --html-report mypy-report
+
+    - name: Run pylint
+      run: |
+        pylint **/*.py --output-format=json:pylint-report.json
+        pylint-json2html -o pylint-report.html -f jsonextended pylint-report.json
+
+    - name: Upload HTML reports as artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: lint-and-typecheck-reports
+        path: |
+          flake8-report
+          mypy-report
+          pylint-report.html
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+
+    steps:
+    - name: Send success message to Telegram
+      if: success()
+      run: |
+        curl -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+        -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+        -d text="CI pipeline passed successfully for pull request #${{ github.event.pull_request.number }}"
+
+    - name: Send failure message to Telegram
+      if: failure()
+      run: |
+        curl -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+        -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+        -d text="CI pipeline failed for pull request #${{ github.event.pull_request.number }}"
+
