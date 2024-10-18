@@ -25,7 +25,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install wemake-python-styleguide mypy pylint pylint-json2html flake8-html
+        pip install wemake-python-styleguide mypy pylint pylint-json2html flake8-html lxml
 
     - name: Run flake8
       run: |
