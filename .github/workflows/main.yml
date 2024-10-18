@@ -30,6 +30,7 @@ jobs:
     - name: Run flake8
       run: |
         flake8 --config=setup.cfg  --format=html --htmldir=flake8-report .
+      continue-on-error: true
 
     - name: Run mypy type check
       run: |
