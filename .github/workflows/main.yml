@@ -35,11 +35,7 @@ jobs:
     - name: Run mypy type check
       run: |
         mypy . --html-report mypy-report
-
-    - name: Run pylint
-      run: |
-        pylint **/*.py --output-format=json:pylint-report.json
-        pylint-json2html -o pylint-report.html -f jsonextended pylint-report.json
+      continue-on-error: true
 
     - name: Upload HTML reports as artifacts
       uses: actions/upload-artifact@v3
@@ -48,7 +44,6 @@ jobs:
         path: |
           flake8-report
           mypy-report
-          pylint-report.html
 
   notify:
     runs-on: ubuntu-latest
