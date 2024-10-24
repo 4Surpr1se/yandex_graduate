@@ -248,10 +248,10 @@ services:
   logstash:
         image: logstash:8.10.2
         depends_on:
-          - elasticsearch
+          - elk-elasticsearch
         environment:
           XPACK_MONITORING_ENABLED: "false"
-          ES_HOST: "elasticsearch:9200"
+          ES_HOST: "elk-elasticsearch:9200"
         ports:
           - "5044:5044/udp"
         volumes:
@@ -264,7 +264,7 @@ services:
       - discovery.type=single-node
       - xpack.security.enabled=false
     ports:
-      - 9201:9200
+      - 9200:9200
     volumes:
       - ./deploy/esdata-elk:/usr/share/elasticsearch/data
 
