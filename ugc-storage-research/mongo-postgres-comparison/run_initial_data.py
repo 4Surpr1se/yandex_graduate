@@ -73,6 +73,38 @@ def generate_pg_likes():
     print(f"{datetime.now()}: Лайки PostgreSQL загружены.")
 
 
+def generate_pg_reviews():
+    print(f"{datetime.now()}: Генерация данных для PostgreSQL рецензий...")
+    filename = "reviews_data.csv"
+    with open(filename, "w", newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        for _ in range(num_reviews):
+            writer.writerow([random.randint(1, num_users), random.randint(1, num_movies), fake.text(), fake.date_time(), random.randint(0, 100), random.randint(0, 100), random.randint(0, 10)])
+
+    print(f"{datetime.now()}: Загрузка данных в PostgreSQL из файла...")
+    with open(filename, "r") as f:
+        pg_cursor.copy_expert("COPY reviews (user_id, movie_id, review_text, review_date, likes, dislikes, rating) FROM STDIN WITH CSV", f)
+    pg_conn.commit()
+    os.remove(filename)
+    print(f"{datetime.now()}: Рецензии PostgreSQL загружены.")
+
+
+def generate_pg_bookmarks():
+    print(f"{datetime.now()}: Генерация данных для PostgreSQL закладок...")
+    filename = "bookmarks_data.csv"
+    with open(filename, "w", newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        for _ in range(num_bookmarks):
+            writer.writerow([random.randint(1, num_users), random.randint(1, num_movies), fake.date_time()])
+
+    print(f"{datetime.now()}: Загрузка данных в PostgreSQL из файла...")
+    with open(filename, "r") as f:
+        pg_cursor.copy_expert("COPY bookmarks (user_id, movie_id, bookmark_date) FROM STDIN WITH CSV", f)
+    pg_conn.commit()
+    os.remove(filename)
+    print(f"{datetime.now()}: Закладки PostgreSQL загружены.")
+
+
 def generate_mongo_likes():
     print(f"{datetime.now()}: Генерация данных для MongoDB лайков...")
     likes = [
@@ -117,6 +149,8 @@ print(f"{datetime.now()}: Коллекции MongoDB удалены и подг�
 print(f"{datetime.now()}: Запуск параллельной генерации данных...")
 with ThreadPoolExecutor() as executor:
     executor.submit(generate_pg_likes)
+    executor.submit(generate_pg_reviews)
+    executor.submit(generate_pg_bookmarks)
     executor.submit(generate_mongo_likes)
     executor.submit(generate_mongo_reviews)
     executor.submit(generate_mongo_bookmarks)
