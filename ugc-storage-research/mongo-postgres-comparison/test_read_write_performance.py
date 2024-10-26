@@ -3,6 +3,7 @@ from pymongo import MongoClient
 import random
 import time
 from datetime import datetime
+import threading
 
 pg_conn = psycopg2.connect(
     dbname="testdb", user="user", password="password", host="localhost", port="5432"
@@ -14,7 +15,10 @@ mongo_db = mongo_client["testdb"]
 
 num_users = 100000
 num_movies = 10000
-num_tests = 100 
+num_tests = 10 
+
+pg_like_appearance_times = [] 
+mongo_like_appearance_times = [] 
 
 def print_postgres_data_counts():
     pg_cursor.execute("SELECT COUNT(*) FROM likes;")
@@ -38,7 +42,7 @@ print_mongo_data_counts()
 def measure_time(func, *args):
     start_time = time.time()
     func(*args)
-    return round((time.time() - start_time) * 1000, 2)  # Время в миллисекундах
+    return round((time.time() - start_time) * 1000, 2) 
 
 def insert_like_pg():
     user_id = random.randint(1, num_users)
@@ -46,6 +50,34 @@ def insert_like_pg():
     rating = random.randint(0, 10)
     pg_cursor.execute("INSERT INTO likes (user_id, movie_id, rating) VALUES (%s, %s, %s);", (user_id, movie_id, rating))
     pg_conn.commit()
+    return movie_id 
+
+def insert_like_mongo(movie_id):
+    mongo_db.likes.insert_one({"user_id": random.randint(1, num_users), "movie_id": movie_id, "rating": random.randint(0, 10)})
+
+def check_pg_like_appearance(movie_id):
+    start_time = time.time()
+    while True:
+        with pg_conn.cursor() as read_cursor:
+            read_cursor.execute("SELECT COUNT(*) FROM likes WHERE movie_id = %s;", (movie_id,))
+            count = read_cursor.fetchone()[0]
+            if count > 0:
+                break
+        time.sleep(0.01)
+    elapsed_time = time.time() - start_time
+    pg_like_appearance_times.append(elapsed_time)
+    print(f"[{datetime.now()}] Лайк для фильма {movie_id} появился в PostgreSQL за {elapsed_time:.2f} сек.")
+
+def check_mongo_like_appearance(movie_id):
+    start_time = time.time()
+    while True:
+        count = mongo_db.likes.count_documents({"movie_id": movie_id})
+        if count > 0:
+            break
+        time.sleep(0.01)
+    elapsed_time = time.time() - start_time
+    mongo_like_appearance_times.append(elapsed_time)
+    print(f"[{datetime.now()}] Лайк для фильма {movie_id} появился в MongoDB за {elapsed_time:.2f} сек.")
 
 def insert_review_pg():
     user_id = random.randint(1, num_users)
@@ -62,9 +94,6 @@ def insert_bookmark_pg():
     bookmark_date = datetime.now()
     pg_cursor.execute("INSERT INTO bookmarks (user_id, movie_id, bookmark_date) VALUES (%s, %s, %s);", (user_id, movie_id, bookmark_date))
     pg_conn.commit()
-
-def insert_like_mongo():
-    mongo_db.likes.insert_one({"user_id": random.randint(1, num_users), "movie_id": random.randint(1, num_movies), "rating": random.randint(0, 10)})
 
 def insert_review_mongo():
     mongo_db.reviews.insert_one({
@@ -104,22 +133,28 @@ def get_average_rating_mongo(movie_id):
 def get_reviews_mongo(movie_id):
     mongo_db.reviews.find({"movie_id": movie_id}).sort("review_date", -1).limit(10)
 
+
 def run_tests():
     results = {
         "PostgreSQL": {"insert_like": [], "insert_review": [], "insert_bookmark": [], "get_likes_count": [], "get_average_rating": [], "get_reviews": []},
         "MongoDB": {"insert_like": [], "insert_review": [], "insert_bookmark": [], "get_likes_count": [], "get_average_rating": [], "get_reviews": []}
     }
 
-    print("Запуск тестов записи данных")
+    print("Запуск тестов записи данных...")
     for i in range(num_tests):
+        movie_id = insert_like_pg() 
         results["PostgreSQL"]["insert_like"].append(measure_time(insert_like_pg))
         results["PostgreSQL"]["insert_review"].append(measure_time(insert_review_pg))
         results["PostgreSQL"]["insert_bookmark"].append(measure_time(insert_bookmark_pg))
-        results["MongoDB"]["insert_like"].append(measure_time(insert_like_mongo))
+        results["MongoDB"]["insert_like"].append(measure_time(insert_like_mongo, movie_id))
         results["MongoDB"]["insert_review"].append(measure_time(insert_review_mongo))
         results["MongoDB"]["insert_bookmark"].append(measure_time(insert_bookmark_mongo))
 
-        if (i + 1) % 100 == 0 or i + 1 == num_tests:
+        insert_like_mongo(movie_id)
+        threading.Thread(target=check_pg_like_appearance, args=(movie_id,)).start() 
+        threading.Thread(target=check_mongo_like_appearance, args=(movie_id,)).start() 
+
+        if (i + 1) % 10 == 0 or i + 1 == num_tests:
             print(f"[{datetime.now()}] Запись данных: {i + 1}/{num_tests} завершено.")
 
     print("Запуск тестов чтения данных")
@@ -134,6 +169,16 @@ def run_tests():
 
         if (i + 1) % 10 == 0 or i + 1 == num_tests:
             print(f"[{datetime.now()}] Чтение данных: {i + 1}/{num_tests} завершено.")
+
+    
+    for thread in threading.enumerate():
+        if thread is not threading.main_thread():
+            thread.join()
+
+    average_pg_time = sum(pg_like_appearance_times) / len(pg_like_appearance_times) if pg_like_appearance_times else 0
+    average_mongo_time = sum(mongo_like_appearance_times) / len(mongo_like_appearance_times) if mongo_like_appearance_times else 0
+    print(f"Среднее время появления лайка в PostgreSQL: {average_pg_time:.2f} сек.")
+    print(f"Среднее время появления лайка в MongoDB: {average_mongo_time:.2f} сек.")
 
     for db, tests in results.items():
         print(f"\nРезультаты для {db}:")
