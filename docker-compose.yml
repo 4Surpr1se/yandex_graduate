@@ -131,7 +131,7 @@ services:
     container_name: auth_postgres
     env_file:
       - auth_service/src/.env
-        #ports:
+    #ports:
     #  - "5433:5432"
     volumes:
       - ./auth_service/pg_auth_data:/var/lib/postgresql/data
@@ -256,7 +256,7 @@ services:
           - "5044:5044/udp"
         volumes:
           - ./deploy/logstash.conf:/config/logstash.conf:ro
-        command: logstash -f /config/logstash.conf 
+        command: logstash -f /config/logstash.conf
 
   elk-elasticsearch:
     image: elasticsearch:8.10.2
@@ -275,8 +275,27 @@ services:
     depends_on:
       - elk-elasticsearch
     environment:
-      - ELASTICSEARCH_HOSTS=http://elk-elasticsearch:9200 
+      - ELASTICSEARCH_HOSTS=http://elk-elasticsearch:9200
 
+  user_activity_service:
+    build: user_activity
+    environment:
+      - APP_ENV=production
+    ports:
+      - "8001:8001"
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:6
+    container_name: mongo_user_act
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
 
 
 volumes:
@@ -284,6 +303,7 @@ volumes:
   kafka_1_data:
   kafka_2_data:
   staticfiles:
+  mongo_data:
   esdata:
     driver: local
   clickhouse_data:
