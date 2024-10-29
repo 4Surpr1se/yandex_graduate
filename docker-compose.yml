@@ -281,6 +281,7 @@ services:
     build: user_activity
     environment:
       - APP_ENV=production
+      - SENTRY_DSN=https://95adc0c17c84f621c334181ba525bcaf@o4508200308965376.ingest.de.sentry.io/4508200312635472
     ports:
       - "8001:8001"
     depends_on:
