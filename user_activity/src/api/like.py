@@ -1,10 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, conint
-from beanie import PydanticObjectId
 
-from src.models.UGC import Like
 from src.schemas.user_activity import LikeRequest
 from src.services.like_service import LikeService
 from src.services.auth import verify_jwt

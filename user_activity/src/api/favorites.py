@@ -1,8 +1,6 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-from beanie import PydanticObjectId
 
 from src.schemas.user_activity import FavoriteRequest
 from src.services.favorite_service import FavoriteService

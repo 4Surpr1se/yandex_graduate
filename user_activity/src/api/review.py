@@ -1,10 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, conint
-from beanie import PydanticObjectId
 
-from src.models.UGC import Review
 from src.schemas.user_activity import ReviewRequest
 from src.services.review_service import ReviewService
 from src.services.auth import verify_jwt
@@ -19,7 +16,6 @@ async def add_review(request: ReviewRequest, auth=Depends(verify_jwt)):
     if res:
         return {"status": "review added"}
     return {"status": "review already exists"}
-
 
 
 @router.put("/{review_id}")
