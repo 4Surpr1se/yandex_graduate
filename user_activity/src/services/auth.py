@@ -1,6 +1,6 @@
 from typing import Optional
 import requests
-from fastapi import Depends, HTTPException, Request, Response
+from fastapi import HTTPException, Request, Response
 from fastapi.security import HTTPBearer
 from src.core.config import settings
 

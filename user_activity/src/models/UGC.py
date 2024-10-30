@@ -1,8 +1,6 @@
 from uuid import UUID
 
-from beanie import Document
-from pydantic import Field, conint
-from datetime import datetime
+from pydantic import conint
 
 from src.models.mixin import BaseMixin
 
