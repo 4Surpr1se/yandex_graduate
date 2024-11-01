@@ -298,6 +298,19 @@ services:
     volumes:
       - mongo_data:/data/db
 
+  filebeat:
+      image: elastic/filebeat:8.10.2
+      volumes:
+        - /tmp/logs/nginx:/var/log/nginx:ro
+        - ./deploy/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      depends_on:
+        - nginx
+        - logstash
+        - elasticsearch
+        - kibana
+      links:
+        - logstash 
+
 
 volumes:
   kafka_0_data:
