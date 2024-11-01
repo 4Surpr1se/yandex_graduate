@@ -10,8 +10,8 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 async def lifespan(_: FastAPI):
     await init_db()
     yield
-    
-sentry_sdk.init(integrations=[FlaskIntegration()]) 
+
+sentry_sdk.init(integrations=[FlaskIntegration()])
 
 app = FastAPI(lifespan=lifespan,
               docs_url='/api/openapi',
