@@ -6,12 +6,7 @@ from config import settings
 class NotificationService:
     def __init__(self):
         self.handlers = {
-            "email": EmailNotificationHandler(
-                smtp_server=settings.smtp_server,
-                smtp_port=settings.smtp_port,
-                smtp_user=settings.smtp_user,
-                smtp_password=settings.smtp_password
-            ),
+            "email": EmailNotificationHandler(api_key=settings.sendinblue_api_key),
             "push": PushNotificationHandler(),
         }
 

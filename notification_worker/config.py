@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     websocket_port: int = 6789
     rabbitmq_host: str = "localhost"
     rabbitmq_queue: str = "notifications"
+    sendinblue_api_key: str
 
     class Config:
         env_file = ".env"
