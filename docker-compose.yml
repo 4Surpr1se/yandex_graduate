@@ -349,6 +349,14 @@ services:
 #      - "5438:5432"
 
 
+  admin_notification:
+    build: ./admin_notification
+    container_name: admin_notification
+    ports:
+      - "8008:8000"
+    depends_on:
+      - notification_api
+
 volumes:
   kafka_0_data:
   kafka_1_data:
