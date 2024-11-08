@@ -311,6 +311,12 @@ services:
       links:
         - logstash 
 
+  notification_generator:
+    build: notification_generator
+    depends_on:
+      - rabbitmq
+      - notification_api
+
 
 volumes:
   kafka_0_data:
