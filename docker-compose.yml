@@ -309,7 +309,44 @@ services:
         - elasticsearch
         - kibana
       links:
-        - logstash 
+        - logstash
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"  # messages
+      - "15672:15672"  # web
+    env_file:
+      - ./notification_api/.env
+
+  notification_api:
+    build:
+      context: ./notification_api
+    container_name: notification_api
+    ports:
+      - "8002:8000"
+    depends_on:
+      rabbitmq:
+          condition: service_started
+      notification_db:
+          condition: service_healthy
+
+
+  notification_db:
+    image: postgres:16.3
+    env_file:
+      - ./notification_api/.env
+    volumes:
+      - ./notification_api/postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d notification" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+#    ports:
+#      - "5438:5432"
 
 
 volumes:
