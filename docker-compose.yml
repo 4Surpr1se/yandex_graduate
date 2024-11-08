@@ -20,19 +20,19 @@ services:
       retries: 5
     restart: always
 
-  clickhouse:
-    image: clickhouse/clickhouse-server:latest
-    container_name: clickhouse
-    environment:
-      - CLICKHOUSE_DB=default
-      - CLICKHOUSE_USER=default
-      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
-    volumes:
-      - clickhouse_data:/var/lib/clickhouse
-    ports:
-      - "8123:8123"
-      - "9000:9000"
-    restart: always
+#  clickhouse:
+#    image: clickhouse/clickhouse-server:latest
+#    container_name: clickhouse
+#    environment:
+#      - CLICKHOUSE_DB=default
+#      - CLICKHOUSE_USER=default
+#      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+#    volumes:
+#      - clickhouse_data:/var/lib/clickhouse
+#    ports:
+#      - "8123:8123"
+#      - "9000:9000"
+#    restart: always
 
   backend:
     build: src
@@ -327,7 +327,10 @@ services:
     ports:
       - "8002:8000"
     depends_on:
-      - rabbitmq
+      rabbitmq:
+          condition: service_started
+      notification_db:
+          condition: service_healthy
 
 
   notification_db:
@@ -336,7 +339,12 @@ services:
       - ./notification_api/.env
     volumes:
       - ./notification_api/postgres_data:/var/lib/postgresql/data
-      - ./notification_api/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d notification" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
 #    ports:
 #      - "5438:5432"
 
