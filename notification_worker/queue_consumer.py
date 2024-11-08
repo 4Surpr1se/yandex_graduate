@@ -9,7 +9,7 @@ def callback(ch, method, properties, body):
 def start_queue_consumer():
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=settings.rabbitmq_host))
     channel = connection.channel()
-    channel.queue_declare(queue=settings.rabbitmq_queue)
+    channel.queue_declare(queue=settings.rabbitmq_queue, durable=True)
 
     channel.basic_consume(queue=settings.rabbitmq_queue, on_message_callback=callback, auto_ack=True)
     print("Waiting for messages in RabbitMQ queue...")
