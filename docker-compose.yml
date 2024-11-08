@@ -309,7 +309,26 @@ services:
         - elasticsearch
         - kibana
       links:
-        - logstash 
+        - logstash
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"  # messages
+      - "15672:15672"  # web
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+
+  notification_api:
+    build:
+      context: ./notification_api
+    container_name: notification_api
+    ports:
+      - "8002:8000"
+    depends_on:
+      - rabbitmq
 
 
 volumes:
