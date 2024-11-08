@@ -8,6 +8,11 @@ class Settings(BaseSettings):
     sendinblue_api_key: str
     queues: str 
     email_sender: str 
+    postgres_db: str = "notification"
+    postgres_user: str = "user"
+    postgres_password: str
+    postgres_host: str = "notification_db"
+    postgres_port: int = 5432
     
     class Config:
         env_file = ".env"
