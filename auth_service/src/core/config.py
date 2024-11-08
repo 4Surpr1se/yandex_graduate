@@ -19,6 +19,7 @@ class ConfigSettings(BaseSettings):
     enable_tracer: bool = True
     agent_host_name: str
     agent_port: int
+    rabbitmq_host: str = "notification_rabbitmq"
 
 
     class Config:
