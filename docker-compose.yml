@@ -311,6 +311,11 @@ services:
       links:
         - logstash 
 
+  notification_service:
+    build: notification_worker
+    ports:
+      - "6789:6789" 
+
 
 volumes:
   kafka_0_data:
