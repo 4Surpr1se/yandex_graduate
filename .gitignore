@@ -14,3 +14,8 @@ __pycache__/
 tests/functional/src/__pycache__/
 tests/functional/__pycache__/
 deploy/esdata-elk/
+**/.venv
+*/postgres_data
+**/.gitignore
+*.iml
+*.xml
