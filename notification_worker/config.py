@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     websocket_port: int = 6789
     rabbitmq_host: str = "rabbitmq"
     sendinblue_api_key: str
-    queues: str    
+    queues: str 
     email_sender: str 
     
     class Config:
@@ -14,6 +14,6 @@ class Settings(BaseSettings):
         
     @property
     def parsed_queues(self):
-        return self.queues[0].split(',') if isinstance(self.queues, list) else []
+        return self.queues.split(',')
 
 settings = Settings()
