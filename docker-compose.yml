@@ -325,6 +325,12 @@ services:
     ports:
       - "6789:6789" 
 
+  notification_generator:
+    build: notification_generator
+    depends_on:
+      - rabbitmq
+      - notification_api
+
   notification_api:
     build:
       context: ./notification_api
