@@ -1,5 +1,6 @@
 import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
+import settings
 import json
 
 class NotificationHandler:
@@ -22,7 +23,7 @@ class EmailNotificationHandler(NotificationHandler):
     def send_email(self, to, subject, body):
         email = sib_api_v3_sdk.SendSmtpEmail(
             to=[{"email": to}],
-            sender={"email": "alinabelko@gmail.com"},
+            sender={"email": settings.email_sender},
             subject=subject,
             text_content=body
         )
