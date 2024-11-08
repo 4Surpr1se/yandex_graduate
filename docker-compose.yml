@@ -320,6 +320,10 @@ services:
     env_file:
       - ./notification_api/.env
 
+  notification_service:
+    build: notification_worker
+    ports:
+      - "6789:6789" 
 
   notification_generator:
     build: notification_generator
