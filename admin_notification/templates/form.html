@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mass Mail Admin Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 500px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #response {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Mass Mail Form</h2>
+        <form id="massMailForm">
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" required>
+
+            <label for="body_template">Body Template:</label>
+            <textarea id="body_template" name="body_template" rows="4" required></textarea>
+
+            <label for="recipients">Recipients (comma-separated emails):</label>
+            <input type="text" id="recipients" name="recipients" required>
+
+            <label for="usernames">Usernames (comma-separated):</label>
+            <input type="text" id="usernames" name="usernames">
+
+            <button type="button" onclick="sendMassMail()">Send Mass Mail</button>
+        </form>
+
+        <p id="response"></p>
+    </div>
+
+    <script>
+        async function sendMassMail() {
+            const title = document.getElementById("title").value;
+            const body_template = document.getElementById("body_template").value;
+            const recipients = document.getElementById("recipients").value.split(",");
+            const usernames = document.getElementById("usernames").value.split(",");
+
+            const response = await fetch("/admin/send-mass-mail", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    title,
+                    body_template,
+                    recipients,
+                    usernames
+                })
+            });
+
+            const result = await response.json();
+            document.getElementById("response").textContent = result.detail || "Error sending notifications";
+
+            // Сбрасываем поля формы после успешной отправки
+            document.getElementById("massMailForm").reset();
+        }
+    </script>
+</body>
+</html>
