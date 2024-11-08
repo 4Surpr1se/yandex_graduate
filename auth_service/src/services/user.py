@@ -1,3 +1,5 @@
+import json
+import pika
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import Response
@@ -6,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from starlette import status
 from werkzeug.security import generate_password_hash
+
 
 from src.core.config import settings
 from src.db.redis import redis_client
@@ -30,8 +33,24 @@ async def create_user_service(user_create: UserCreate, db: AsyncSession, role: s
         await db.commit()
         await db.refresh(user)
 
+    send_user_registered_event(user.id, user.email)
+
     return user
 
+def send_user_registered_event(user_id: str, email: str):
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=settings.rabbitmq_host)) 
+    channel = connection.channel()
+    channel.queue_declare(queue="users.register", durable=True)
+
+    message = {"user_id": user_id, "email": email}
+    channel.basic_publish(
+        exchange="",
+        routing_key="users.register",
+        body=json.dumps(message),
+        properties=pika.BasicProperties(delivery_mode=2) 
+    )
+
+    connection.close()
 
 async def get_or_create_role(db: AsyncSession, role: str) -> Role:
     result = await db.execute(select(Role).filter_by(name=role))
