@@ -320,6 +320,13 @@ services:
     env_file:
       - ./notification_api/.env
 
+
+  notification_generator:
+    build: notification_generator
+    depends_on:
+      - rabbitmq
+      - notification_api
+
   notification_api:
     build:
       context: ./notification_api
