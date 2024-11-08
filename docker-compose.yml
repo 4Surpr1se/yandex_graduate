@@ -20,19 +20,19 @@ services:
       retries: 5
     restart: always
 
-#  clickhouse:
-#    image: clickhouse/clickhouse-server:latest
-#    container_name: clickhouse
-#    environment:
-#      - CLICKHOUSE_DB=default
-#      - CLICKHOUSE_USER=default
-#      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
-#    volumes:
-#      - clickhouse_data:/var/lib/clickhouse
-#    ports:
-#      - "8123:8123"
-#      - "9000:9000"
-#    restart: always
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse
+    environment:
+      - CLICKHOUSE_DB=default
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    restart: always
 
   backend:
     build: src
