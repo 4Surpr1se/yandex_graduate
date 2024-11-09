@@ -3,7 +3,6 @@ from multiprocessing import Process
 from websocket_server import start_websocket_server
 from queue_consumer import start_queue_consumer
 import logging
-import time
 from config import settings
 
 def run_websocket_server():
@@ -11,7 +10,7 @@ def run_websocket_server():
     asyncio.run(start_websocket_server())
 
 def run_queue_consumer(queue_name):
-    logging.info((f"Starting queue consumer for queue {queue_name}...")
+    logging.info(f"Starting queue consumer for queue {queue_name}...")
     start_queue_consumer(queue_name)
 
 
