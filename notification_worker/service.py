@@ -1,5 +1,6 @@
 import json
 import asyncio
+import logging
 from handlers import EmailNotificationHandler, PushNotificationHandler
 from config import settings
 
@@ -24,4 +25,4 @@ class NotificationService:
             else:
                 handler.send(data)
         else:
-            print(f"No handler for notification type: {notification_type}")
+            logging.info(f"No handler for notification type: {notification_type}")

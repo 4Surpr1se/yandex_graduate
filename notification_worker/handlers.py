@@ -2,6 +2,7 @@ import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
 from config import settings
 from db import db
+import logging
 import json
 
 class NotificationHandler:
@@ -35,10 +36,10 @@ class EmailNotificationHandler(NotificationHandler):
 
         try:
             response = self.api_instance.send_transac_email(email)
-            print(f"Email sent to {to}. Response: {response}")
+            logging.info(f"Email sent to {to}. Response: {response}")
             db.update_last_notification_send(notification_id)
         except ApiException as e:
-            print(f"Failed to send email to {to}: {str(e)}")
+            logging.info(f"Failed to send email to {to}: {str(e)}")
 
     def send(self, data):
         subject = data.get("subject", "No Subject")
