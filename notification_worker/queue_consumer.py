@@ -1,10 +1,8 @@
 import pika
-import threading
 import time
 from service import NotificationService
 from config import settings
 import logging
-import multiprocessing
 
 def callback(ch, method, properties, body):
     service = NotificationService()
