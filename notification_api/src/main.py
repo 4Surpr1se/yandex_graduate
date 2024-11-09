@@ -1,14 +1,19 @@
 from fastapi import FastAPI
+from alembic.config import Config
+from alembic import command
 from contextlib import asynccontextmanager
 from src.api.notifications import router as notifications_router
-from src.db.base import create_tables
 from src.services.message_queue import MessageQueueService
 from src.core.config import settings
 
 
+alembic_cfg = Config("alembic.ini")
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    await create_tables()
+
+    command.upgrade(alembic_cfg, "head")
 
     message_queue_service = MessageQueueService()
 
