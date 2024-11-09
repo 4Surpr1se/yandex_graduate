@@ -1,14 +1,16 @@
 import json
 import asyncio
 import logging
-from handlers import EmailNotificationHandler, PushNotificationHandler
-from config import settings
+from handlers.email_notification_handler import EmailNotificationHandler
+from handlers.push_notification_handler import PushNotificationHandler
+from handlers.sms_notification_handler import SmsNotificationHandler
 
 class NotificationService:
     def __init__(self):
         self.handlers = {
-            "email": EmailNotificationHandler(api_key=settings.sendinblue_api_key),
+            "email": EmailNotificationHandler(),
             "push": PushNotificationHandler(),
+            "sms": SmsNotificationHandler()
         }
 
     def register_handler(self, notification_type, handler):
