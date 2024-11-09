@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 class NotificationScheduler:
     async def schedule_task(self, interval, queue_name):
@@ -7,7 +8,7 @@ class NotificationScheduler:
             await asyncio.sleep(interval)
 
     def start(self):
-        print("Notification generator started with asyncio scheduler")
+        logging.info("Notification generator started with asyncio scheduler")
 
         asyncio.run(self.run_scheduler())
 
@@ -20,7 +21,7 @@ class NotificationScheduler:
         await asyncio.gather(*tasks)
 
     def consume_messages(self, queue_name):
-        print(f"Consuming messages from {queue_name}")
+        logging.info(f"Consuming messages from {queue_name}")
 
 if __name__ == "__main__":
     scheduler = NotificationScheduler()

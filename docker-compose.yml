@@ -368,6 +368,14 @@ services:
     depends_on:
       - notification_api
 
+  mailhog:
+    image: mailhog/mailhog
+    logging:
+      driver: 'none'
+    ports:
+      - 1025:1025
+      - 8025:8025
+
 volumes:
   kafka_0_data:
   kafka_1_data:

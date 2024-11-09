@@ -1,5 +1,6 @@
 import uuid
 import requests
+import logging
 from jinja2 import Template
 from datetime import datetime
 from pathlib import Path
@@ -45,6 +46,6 @@ class RegistrationHandler(BaseHandler):
                 headers={"Content-Type": "application/json"}
             )
             response.raise_for_status()
-            print(f"Notification sent successfully to {notification.recipients}")
+            logging.info(f"Notification sent successfully to {notification.recipients}")
         except requests.exceptions.RequestException as e:
-            print(f"Failed to send notification: {e}")
+            logging.info(f"Failed to send notification: {e}")

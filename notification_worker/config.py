@@ -5,7 +5,8 @@ class Settings(BaseSettings):
     websocket_host: str = "localhost"
     websocket_port: int = 6789
     rabbitmq_host: str = "rabbitmq"
-    sendinblue_api_key: str
+    smtp_host: str = "mailhog"
+    smtp_port: int = 1025
     queues: str 
     email_sender: str 
     postgres_db: str = "notification"
