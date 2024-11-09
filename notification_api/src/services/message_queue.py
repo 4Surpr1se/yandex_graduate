@@ -1,6 +1,10 @@
 import pika
 import uuid
+import logging
 from src.core.config import settings
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class MessageQueueService:
@@ -21,9 +25,9 @@ class MessageQueueService:
                 channel = connection.channel()
                 channel.queue_declare(queue=queue_name, durable=True)
 
-                print(f"Queue '{queue_name}' is initialized or already exists.")
+                logger.info(f"Queue '{queue_name}' is initialized or already exists.")
         except Exception as e:
-            print(f"Error initializing queue '{queue_name}': {e}")
+            logger.error(f"Error initializing queue '{queue_name}': {e}")
 
     def send_message(self, queue_name: str, message_body, headers: dict = None):
         try:
@@ -45,6 +49,6 @@ class MessageQueueService:
                     body=message_body,
                     properties=properties
                 )
-                print(f"Message sent to '{queue_name}'")
+                logger.info(f"Message sent to '{queue_name}'")
         except Exception as e:
-            print(f"Error sending message to '{queue_name}': {e}")
+            logger.error(f"Error sending message to '{queue_name}': {e}")
