@@ -376,6 +376,22 @@ services:
       - 1025:1025
       - 8025:8025
 
+  billing_db:
+    image: postgres:16.3
+    container_name: billing_postgres
+    env_file:
+      - billing_service/.env
+    ports:
+      - "5434:5432"
+    volumes:
+      - ./billing_service/pg_billing_data:/var/lib/postgresql/data
+      - ./billing_service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U app -d billing_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   kafka_0_data:
   kafka_1_data:
