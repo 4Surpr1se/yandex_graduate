@@ -10,3 +10,4 @@ class NotificationType(Enum):
     MASS_MAILING = 1
     WEEKLY_REPORT = 2
     REGISTRATION = 3
+    BILLING = 4
