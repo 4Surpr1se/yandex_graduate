@@ -3,7 +3,7 @@ services:
 
   database:
     image: postgres:16.3
-    env_file: 
+    env_file:
       - .env
       - admin_panel/app/config/.env
 
@@ -38,7 +38,7 @@ services:
     build: src
     # ports:
     #   - "80:80"
-    env_file: 
+    env_file:
       - .env
     depends_on:
       - database
@@ -78,7 +78,7 @@ services:
 
   postgres_to_es:
     build: postgres_to_es
-    env_file: 
+    env_file:
       - .env
     depends_on:
       - database
@@ -154,8 +154,8 @@ services:
     env_file:
       - auth_service/src/.env
     volumes:
-      - ./auth_service:/app  
-      - ./auth_service/migrations:/app/migrations 
+      - ./auth_service:/app
+      - ./auth_service/migrations:/app/migrations
     ports:
       - "8000:8000"
     depends_on:
@@ -323,7 +323,7 @@ services:
   notification_service:
     build: notification_worker
     ports:
-      - "6789:6789" 
+      - "6789:6789"
 
   notification_generator:
     build: notification_generator
@@ -391,6 +391,32 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  billing_service:
+    build:
+      context: billing_service/
+      dockerfile: Dockerfile
+    ports:
+      - "8009:8009"
+    depends_on:
+      - billing_db
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8009/" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    platform: linux/arm64
+    command: http billing_service:8009
+    env_file:
+      - billing_service/.env
+    ports:
+      - "4040:4040"
+    depends_on:
+      - billing_service
 
 volumes:
   kafka_0_data:
