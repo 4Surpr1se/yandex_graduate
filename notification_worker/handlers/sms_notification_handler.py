@@ -10,7 +10,7 @@ class SMSNotificationHandler(BaseNotificationHandler):
     def send_sms(self, to, body, notification_id):
         raise NotImplementedError("Sms notifications not supported")
 
-    def send(self, data):
+    def send(self, data, properties):
         body = data.get("body", "")
         recipient = data.get("recipient")
         notification_id = data.get("notification_id")

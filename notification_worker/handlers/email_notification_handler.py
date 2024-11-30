@@ -27,11 +27,19 @@ class EmailNotificationHandler(BaseNotificationHandler):
         except Exception as e:
             logging.error(f"Failed to send email to {to}: {str(e)}")
 
-    def send(self, data: dict) -> None:
+    def send(self, data: dict, properties) -> None:
+        # Извлекаем channel_id из заголовков properties
+        channel_id = properties.headers.get('channel_id') if properties.headers else None
+
+        # Получаем данные из входного словаря
         subject = data.get("subject", "No Subject")
         body = data.get("body", "")
         recipient = data.get("recipient")
         notification_id = data.get("notification_id")
 
+        # Здесь можно логировать или использовать channel_id, если нужно
+        print(f'Channel ID: {channel_id}')
+
+        # Отправляем email
         self.send_email(recipient, subject, body, notification_id)
         

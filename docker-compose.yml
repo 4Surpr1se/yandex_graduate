@@ -324,6 +324,9 @@ services:
     build: notification_worker
     ports:
       - "6789:6789"
+    depends_on:
+      - rabbitmq
+      - mailhog
 
   notification_generator:
     build: notification_generator
