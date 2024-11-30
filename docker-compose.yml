@@ -392,6 +392,16 @@ services:
       timeout: 5s
       retries: 5
 
+  price_service:
+    build: ./price_service
+    container_name: price_service
+    ports:
+      - 5005:5000
+    env_file:
+      - price_service/.env
+    depends_on:
+      - billing_db
+
   billing_service:
     build:
       context: billing_service/
