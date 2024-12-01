@@ -99,7 +99,7 @@ services:
         driver: gelf
         options:
           gelf-address: udp://127.0.0.1:5044
-          tag: nginx ы
+          tag: nginx
 
     depends_on:
       - backend
