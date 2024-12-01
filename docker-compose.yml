@@ -324,9 +324,8 @@ services:
     build: notification_worker
     ports:
       - "6789:6789"
-    depends_on:
-      - rabbitmq
-      - mailhog
+    env_file:
+      - ./notification_worker/.env
 
   notification_generator:
     build: notification_generator
@@ -359,8 +358,8 @@ services:
       timeout: 5s
       retries: 5
     restart: always
-#    ports:
-#      - "5438:5432"
+    ports:
+      - "5438:5432"
 
 
   admin_notification:

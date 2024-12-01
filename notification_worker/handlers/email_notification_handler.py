@@ -2,6 +2,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from handlers.base_handler import BaseNotificationHandler
+from bs4 import BeautifulSoup
 from config import settings
 from db import db
 import logging
@@ -26,20 +27,32 @@ class EmailNotificationHandler(BaseNotificationHandler):
             db.update_last_notification_send(notification_id)
         except Exception as e:
             logging.error(f"Failed to send email to {to}: {str(e)}")
+            
+    def parse_html_data(self, data):
+        try:
+            decoded_data = data.decode("utf-8")
+            soup = BeautifulSoup(decoded_data, "html.parser")
 
-    def send(self, data: dict, properties) -> None:
-        # Извлекаем channel_id из заголовков properties
-        channel_id = properties.headers.get('channel_id') if properties.headers else None
+            subject = soup.find("h1").get_text(strip=True) if soup.find("h1") else "No Subject"
+            body = " ".join([p.get_text(strip=True) for p in soup.find_all("p")])
+            return {"subject": subject, "body": body}
+        except Exception as e:
+            logging.error(f"Failed to parse HTML data: {e}")
+            return {"subject": "No Subject", "body": ""}
 
-        # Получаем данные из входного словаря
-        subject = data.get("subject", "No Subject")
-        body = data.get("body", "")
-        recipient = data.get("recipient")
-        notification_id = data.get("notification_id")
+    def send(self, data, properties) -> None:
+        logging.info(f"data {data}")
 
-        # Здесь можно логировать или использовать channel_id, если нужно
-        print(f'Channel ID: {channel_id}')
+        parsed_data = self.parse_html_data(data)
+        subject = parsed_data["subject"]
+        body = parsed_data["body"]
 
-        # Отправляем email
+        recipient = properties.headers.get("Recipient")
+        notification_id = properties.headers.get("X-Request-Id")
+
+        if not recipient:
+            logging.error("Recipient is missing in properties")
+            return
+
         self.send_email(recipient, subject, body, notification_id)
         

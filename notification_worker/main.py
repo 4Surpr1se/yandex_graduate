@@ -5,6 +5,14 @@ from queue_consumer import start_queue_consumer
 import logging
 from config import settings
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
+
 def run_websocket_server():
     logging.info("Starting WebSocket server...")
     asyncio.run(start_websocket_server())

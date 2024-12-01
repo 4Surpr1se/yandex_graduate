@@ -17,7 +17,13 @@ class NotificationService:
         self.handlers[notification_type] = handler
 
     def process_message(self, message, properties, websocket=None):
-        channel_id = properties.headers.get('channel_id') if properties.headers else None
+        channel_id = None
+        if properties.headers:
+            try:
+                channel_id = ChannelType(int(properties.headers.get('channel_type')))
+            except (ValueError, KeyError):
+                logging.warning(f"Invalid or missing channel_type in headers: {properties.headers}")
+
         handler = self.handlers.get(channel_id)
 
         if handler:
@@ -27,3 +33,4 @@ class NotificationService:
                 handler.send(message, properties)
         else:
             logging.info(f"No handler for notification type: {channel_id}")
+
