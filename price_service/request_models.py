@@ -4,10 +4,14 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 
-class FilmPriceRequest(BaseModel):
+class FilmPriceCalculationRequest(BaseModel):
     film_id: str
     country: str 
 
+class FilmPriceRequest(BaseModel):
+    item_id: str
+    country: str 
+    base_price: float
 
 class SubscriptionPriceRequest(BaseModel):
     subscription_type: str
