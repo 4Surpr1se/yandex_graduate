@@ -416,6 +416,15 @@ services:
       timeout: 5s
       retries: 3
 
+  billing_api:
+    build:
+      context: billing_api/
+      dockerfile: Dockerfile
+    ports:
+      - "8010:8009"
+    depends_on:
+      - billing_service
+      - price_service
 
   ngrok:
     image: ngrok/ngrok:latest
