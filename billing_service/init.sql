@@ -14,14 +14,16 @@ CREATE TABLE user_subscriptions (
     user_id UUID NOT NULL,
     subscription_id UUID NOT NULL,
     status subscription_status NOT NULL,
-    next_billing_date TIMESTAMP
+    next_billing_date TIMESTAMP,
+    payment_method_id UUID
 );
 
 
 CREATE TABLE subscriptions (
     id UUID PRIMARY KEY,
     name VARCHAR NOT NULL,
-    base_price DECIMAL(10, 2) NOT NULL
+    base_price DECIMAL(10, 2) NOT NULL,
+    base_currency VARCHAR(3) NOT NULL
 );
 
 
@@ -32,6 +34,7 @@ CREATE TABLE transactions (
     currency VARCHAR(3) NOT NULL,
     status transaction_status NOT NULL,
     type transaction_type NOT NULL,
+    subscription_id UUID REFERENCES subscriptions(id),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP
 );

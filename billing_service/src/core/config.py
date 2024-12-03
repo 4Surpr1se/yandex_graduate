@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     shop_id: str
     ngrok_host: str
     ngrok_port: str
+    payment_redirect: str
 
     class Config:
         env_file = '.env'
