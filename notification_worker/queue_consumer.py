@@ -6,13 +6,20 @@ import logging
 
 def callback(ch, method, properties, body):
     service = NotificationService()
-    service.process_message(body)
+    service.process_message(body, properties)
 
 def start_queue_consumer(queue_name):
     connection = None
     for i in range(5):
         try:
-            connection = pika.BlockingConnection(pika.ConnectionParameters(host=settings.rabbitmq_host))
+            credentials = pika.PlainCredentials(settings.rabbitmq_user, settings.rabbitmq_password)
+            connection = pika.BlockingConnection(
+                pika.ConnectionParameters(
+                    host=settings.rabbitmq_host,
+                    port=5672,
+                    credentials=credentials
+                )
+            )
             break
         except pika.exceptions.AMQPConnectionError as e:
             logging.info(f"Connection failed: {e}. Retrying in 5 seconds...")

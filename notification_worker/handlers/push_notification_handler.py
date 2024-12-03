@@ -4,7 +4,7 @@ from db import db
 import json
 
 class PushNotificationHandler(BaseNotificationHandler):
-    async def send(self, data, websocket):
+    async def send(self, data, properties, websocket):
         await websocket.send(json.dumps(data))
         notification_id = data.get("notification_id")
         if notification_id:

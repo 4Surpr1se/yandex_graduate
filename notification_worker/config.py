@@ -5,6 +5,8 @@ class Settings(BaseSettings):
     websocket_host: str = "localhost"
     websocket_port: int = 6789
     rabbitmq_host: str = "rabbitmq"
+    rabbitmq_user: str = "user"
+    rabbitmq_password: str
     smtp_host: str = "mailhog"
     smtp_port: int = 1025
     queues: str 

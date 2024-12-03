@@ -99,7 +99,7 @@ services:
         driver: gelf
         options:
           gelf-address: udp://127.0.0.1:5044
-          tag: nginx ы
+          tag: nginx
 
     depends_on:
       - backend
@@ -324,6 +324,8 @@ services:
     build: notification_worker
     ports:
       - "6789:6789"
+    env_file:
+      - ./notification_worker/.env
 
   notification_generator:
     build: notification_generator
@@ -356,8 +358,8 @@ services:
       timeout: 5s
       retries: 5
     restart: always
-#    ports:
-#      - "5438:5432"
+    ports:
+      - "5438:5432"
 
 
   admin_notification:
