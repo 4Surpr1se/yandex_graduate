@@ -7,10 +7,10 @@ class PaymentMethod(object):
     YOO_MONEY = "yoo_money"
 
 
-class SubscriptionStatus(Enum):
-    ACTIVE = "active"
-    CANCELED = "canceled"
-    EXPIRED = "expired"
+class Subscription_Status(Enum):
+    active = "active"
+    canceled = "canceled"
+    expired = "expired"
 
 
 class Transaction_Status(Enum):
