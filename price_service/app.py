@@ -4,14 +4,14 @@ from config import SessionLocal
 from sqlalchemy.orm import Session
 from models import FilmPrice, Subscription, TaxRate, Discount
 from services import calculate_price
-from request_models import FilmPriceRequest, SubscriptionPriceRequest, TaxRateRequest, DiscountRequest
+from request_models import FilmPriceRequest, FilmPriceCalculationRequest, SubscriptionPriceRequest, TaxRateRequest, DiscountRequest
 
 app = Flask(__name__)
 
 @app.route('/calculate_film_price', methods=['POST'])
 def calculate_film_price():
     try:
-        data = FilmPriceRequest.model_validate(request.json)
+        data = FilmPriceCalculationRequest.model_validate(request.json)
     except ValidationError as e:
         return jsonify({"error": e.errors()}), 400
 

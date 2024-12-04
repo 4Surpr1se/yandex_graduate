@@ -1,5 +1,6 @@
 import datetime
 import enum
+import uuid
 
 from sqlalchemy import Column, DateTime, Enum, Float, Integer, Numeric, String
 from sqlalchemy.dialects.postgresql import UUID as PostgresUUID
@@ -32,7 +33,7 @@ class DiscountType(enum.Enum):
 class UserSubscription(Base):
     __tablename__ = "user_subscriptions"
 
-    id = Column(PostgresUUID(as_uuid=True), primary_key=True)
+    id = Column(PostgresUUID(as_uuid=True), default=uuid.uuid4, primary_key=True)
     user_id = Column(PostgresUUID(as_uuid=True), nullable=False)
     subscription_id = Column(PostgresUUID(as_uuid=True), nullable=False)
     status = Column(Enum(SubscriptionStatus, name='subscriptionstatus'), nullable=False)
@@ -41,14 +42,14 @@ class UserSubscription(Base):
 class Subscription(Base):
     __tablename__ = "subscriptions"
 
-    id = Column(PostgresUUID(as_uuid=True), primary_key=True)
+    id = Column(PostgresUUID(as_uuid=True), default=uuid.uuid4, primary_key=True)
     name = Column(String, nullable=False)
     base_price = Column(Numeric(10, 2), nullable=False)
 
 class Transaction(Base):
     __tablename__ = "transactions"
 
-    id = Column(PostgresUUID(as_uuid=True), primary_key=True)
+    id = Column(PostgresUUID(as_uuid=True), default=uuid.uuid4, primary_key=True)
     user_id = Column(PostgresUUID(as_uuid=True), nullable=False)
     amount = Column(Numeric(10, 2), nullable=False)
     currency = Column(String(3), nullable=False)
@@ -60,7 +61,7 @@ class Transaction(Base):
 class FilmPurchase(Base):
     __tablename__ = "film_purchases"
 
-    id = Column(PostgresUUID(as_uuid=True), primary_key=True)
+    id = Column(PostgresUUID(as_uuid=True), default=uuid.uuid4, primary_key=True)
     user_id = Column(PostgresUUID(as_uuid=True), nullable=False)
     movie_id = Column(PostgresUUID(as_uuid=True), nullable=False)
     status = Column(Enum(PurchaseStatus, name='purchase_status'), nullable=False)
@@ -69,7 +70,7 @@ class FilmPurchase(Base):
 class Discount(Base):
     __tablename__ = "discounts"
 
-    id = Column(PostgresUUID(as_uuid=True), primary_key=True)
+    id = Column(PostgresUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     item_id = Column(PostgresUUID(as_uuid=True), nullable=False)
     name = Column(String, nullable=False)
     type = Column(Enum(DiscountType, name='discount_type'), nullable=False)
@@ -80,14 +81,14 @@ class Discount(Base):
 class FilmPrice(Base):
     __tablename__ = "film_prices"
 
-    id = Column(PostgresUUID(as_uuid=True), primary_key=True)
+    id = Column(PostgresUUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
     item_id = Column(PostgresUUID(as_uuid=True), nullable=False)
     base_price = Column(Numeric(10, 2), nullable=False)
 
 class TaxRate(Base):
     __tablename__ = "tax_rates"
 
-    id = Column(PostgresUUID(as_uuid=True), primary_key=True)
+    id = Column(PostgresUUID(as_uuid=True), default=uuid.uuid4, primary_key=True)
     country = Column(String, nullable=False, unique=True)
     name = Column(String, nullable=False)
     rate = Column(Float, nullable=False)
