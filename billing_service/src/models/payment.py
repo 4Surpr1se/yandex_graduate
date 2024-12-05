@@ -46,3 +46,13 @@ class Transaction(Base):
     subscription_id = Column(UUID(as_uuid=True), ForeignKey('subscriptions.id'), nullable=True)
 
     subscription = relationship("Subscription", backref="transactions")
+    
+
+class FilmPurchase(Base):
+    __tablename__ = "film_purchases"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, index=True) 
+    transaction_id = Column(UUID(as_uuid=True), ForeignKey('subscriptions.id'), nullable=True)
+    user_id = Column(UUID(as_uuid=True), nullable=False)
+    movie_id = Column(UUID(as_uuid=True), nullable=False)
+    created_at = Column(TIMESTAMP, nullable=False)
