@@ -18,12 +18,15 @@ async def add_roles(user_id: UUID,
                     roles_service: RolesService = Depends(get_roles_service),
                     db: AsyncSession = Depends(get_session)):
     access_token = request.cookies.get("access_token")
-    if not access_token:
-        raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED, detail="Missing session token")
 
     res = await roles_service.add_role(user_id, user_role_request.role, access_token, db)
+    if not res.user_id:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
+                            detail='User doesn\'t exist')
+    if not res.success:
+        return res
     if not res:
-        raise HTTPException(status_code=HTTPStatus.METHOD_NOT_ALLOWED,
+        raise HTTPException(status_code=HTTPStatus.FORBIDDEN,
                             detail='Not enough permissions or invalid role')
     return res
 
@@ -35,11 +38,14 @@ async def remove_roles(user_id: UUID,
                        roles_service: RolesService = Depends(get_roles_service),
                        db: AsyncSession = Depends(get_session)):
     access_token = request.cookies.get("access_token")
-    if not access_token:
-        raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED, detail="Missing session token")
 
     res = await roles_service.remove_role(user_id, user_role_request.role, access_token, db)
+    if not res.user_id:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
+                            detail='User doesn\'t exist')
+    if not res.success:
+        return res
     if not res:
-        raise HTTPException(status_code=HTTPStatus.METHOD_NOT_ALLOWED,
+        raise HTTPException(status_code=HTTPStatus.FORBIDDEN,
                             detail='Not enough permissions or invalid role')
     return res

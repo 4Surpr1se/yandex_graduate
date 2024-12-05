@@ -20,7 +20,7 @@ from src.services.payment_service import (
     get_ngrok_url,
     get_payment_service,
 )
-
+from src.services.role_service import role_service
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -126,8 +126,13 @@ async def webhook_handler(
 
             if user_mail := response_object.metadata.get("user_mail"):
                 send_notification(user_mail)
+            if ((user_id := response_object.metadata.get("user_id")) and
+                    (subscription_id := response_object.metadata.get("subscription_id"))):
+                logger.info("auth_api call")
+                await role_service(user_id, 'add')
 
-            if response_object.metadata.get("subscription_id") and response_object.payment_method.saved:
+            if (response_object.metadata.get("subscription_id") and
+                    response_object.payment_method.saved):
                 await payment_service.set_next_subscription(
                     user_id=UUID(response_object.metadata["user_id"]),
                     user_mail=response_object.metadata.get("user_mail"),
@@ -154,6 +159,9 @@ async def webhook_handler(
                 status=Transaction_Status.failed,
                 session=session,
             )
+            if ((user_id := response_object.metadata.get("user_id")) and
+                    (subscription_id := response_object.metadata.get("subscription_id"))):
+                await role_service(user_id, 'remove')
 
         elif notification_object.event == WebhookNotificationEventType.PAYMENT_WAITING_FOR_CAPTURE:
             await payment_service.update_transaction_status(

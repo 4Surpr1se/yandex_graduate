@@ -47,7 +47,7 @@ class PaymentService:
                     "metadata": {
                         "user_id": str(payment_data.user_id),
                         "transaction_id": str(transaction.id),
-                        "user_mail": str(payment_data.get("user_mail", '')),
+                        "user_mail": str(payment_data.user_mail),
                     },
                 }
             )
@@ -121,7 +121,7 @@ class PaymentService:
                         "user_id": str(payment_data.user_id),
                         "transaction_id": str(transaction.id),
                         "subscription_id": str(subscription.id),
-                        "user_mail": str(payment_data.get("user_mail", '')),
+                        "user_mail": str(payment_data.user_mail),
                     }
                 }
             )

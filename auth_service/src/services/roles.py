@@ -1,3 +1,4 @@
+import logging
 from uuid import UUID
 
 from jose import JWTError, jwt
@@ -13,9 +14,6 @@ from src.schemas.admin import RoleResponse
 class RolesService:
 
     async def validate_and_fetch(self, user_id: UUID, role: str, access_token: str, db: AsyncSession):
-        access = await self.check_permissions(access_token)
-        if not access:
-            return None, None, None
 
         user_result = await db.execute(select(User).where(User.id == user_id))
         user = user_result.unique().scalar_one_or_none()
@@ -27,12 +25,22 @@ class RolesService:
         if not existing_role:
             return None, None, None
 
-        return user, existing_role, access
+        return user, existing_role, None
 
     async def add_role(self, user_id: UUID, role: str, access_token: str, db: AsyncSession):
         user, existing_role, access = await self.validate_and_fetch(user_id, role, access_token, db)
-        if not user or existing_role in user.roles:
-            return None
+        if not user:
+            return RoleResponse(
+                success=False,
+                message=f"User '{user_id}' doesn't exist.",
+                user_id=None,
+            )
+        if existing_role in user.roles:
+            return RoleResponse(
+                success=False,
+                message=f"User '{user_id}' already has role '{existing_role}'.",
+                user_id=user_id,
+            )
 
         user.roles.append(existing_role)
         await db.commit()
@@ -63,7 +71,11 @@ class RolesService:
                 user_id=user_id,
                 role=role
             )
-        return None
+        return RoleResponse(
+            success=False,
+            message=f"User '{user_id}' doesn\'t have role '{existing_role}'.",
+            user_id=user_id,
+        )
 
     async def check_permissions(self, access_token: str):
         try:

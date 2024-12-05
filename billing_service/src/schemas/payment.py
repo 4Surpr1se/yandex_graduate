@@ -12,6 +12,7 @@ class RequestPayment(BaseModel):
     currency: str
     description: str
     payment_method: str = "bank_card"
+    user_mail: str = ""
 
     class Config:
         arbitrary_types_allowed = True
@@ -22,3 +23,4 @@ class RequestSubscription(BaseModel):
     subscription_id: UUID
     description: str
     payment_method: str = "bank_card"
+    user_mail: str = ""

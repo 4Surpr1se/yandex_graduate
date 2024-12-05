@@ -11,6 +11,11 @@ class ConfigSettings(BaseSettings):
     agent_host_name: str
     agent_port: int
     enable_tracer: bool = False
+    billing_postgres_host: str 
+    billing_postgres_port: int
+    billing_postgres_db: str
+    billing_postgres_user: str
+    billing_postgres_password: str
 
     class Config:
         env_file = "../.env"
