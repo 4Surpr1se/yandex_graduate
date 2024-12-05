@@ -23,6 +23,7 @@ class UserSubscription(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, index=True)
     user_id = Column(UUID, nullable=False)
+    user_mail = Column(String(), nullable=True)
     subscription_id = Column(UUID(as_uuid=True), ForeignKey('subscriptions.id'))
     status = Column(Enum(Subscription_Status), nullable=False)
     next_billing_date = Column(TIMESTAMP)
