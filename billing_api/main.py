@@ -22,6 +22,7 @@ async def create_film_payment(request: FilmPaymentRequest, user_id: str = Depend
             "payment_method": "bank_card",
             "transaction_type": "movie",
             "user_mail": user_mail,
+            "movie_id": request.film_id
         }
 
         payment_response = initiate_payment(payment_data)
@@ -33,7 +34,8 @@ async def create_film_payment(request: FilmPaymentRequest, user_id: str = Depend
 
 @app.post("/payment/subscription")
 async def create_subscription_payment(request: SubscriptionPaymentRequest,
-                                      user_id: str = Depends(get_user_id_from_token)):
+                                      user_id: str = Depends(get_user_id_from_token),
+                                      user_mail: str | None = Depends(get_user_mail_from_token)):
     try:
         subscription_price = get_subscription_price(request.country, request.subscription_type)
 
@@ -44,6 +46,7 @@ async def create_subscription_payment(request: SubscriptionPaymentRequest,
             "description": f"Subscription payment for {request.subscription_type}",
             "payment_method": "bank_card",
             "transaction_type": "subscription",
+            "user_mail": user_mail,
         }
 
         payment_response = initiate_payment(payment_data)
