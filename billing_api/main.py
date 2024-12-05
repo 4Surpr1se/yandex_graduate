@@ -12,10 +12,8 @@ app = FastAPI()
 async def create_film_payment(request: FilmPaymentRequest, user_id: str = Depends(get_user_id_from_token),
                               user_mail: str | None = Depends(get_user_mail_from_token)):
     try:
-        # Получаем стоимость фильма через сервис
         film_price = get_film_price(request.country, request.film_id)
 
-        # Формируем данные для платежа
         payment_data = {
             "user_id": user_id,
             "amount": film_price["final_price"],
@@ -26,7 +24,6 @@ async def create_film_payment(request: FilmPaymentRequest, user_id: str = Depend
             "user_mail": user_mail,
         }
 
-        # Инициализируем платеж через сервис
         payment_response = initiate_payment(payment_data)
 
         return payment_response
@@ -38,10 +35,8 @@ async def create_film_payment(request: FilmPaymentRequest, user_id: str = Depend
 async def create_subscription_payment(request: SubscriptionPaymentRequest,
                                       user_id: str = Depends(get_user_id_from_token)):
     try:
-        # Получаем стоимость подписки через сервис
         subscription_price = get_subscription_price(request.country, request.subscription_type)
 
-        # Формируем данные для платежа
         payment_data = {
             "user_id": user_id,
             "amount": subscription_price["final_price"],
@@ -51,7 +46,6 @@ async def create_subscription_payment(request: SubscriptionPaymentRequest,
             "transaction_type": "subscription",
         }
 
-        # Инициализируем платеж через сервис
         payment_response = initiate_payment(payment_data)
 
         return payment_response
@@ -62,7 +56,6 @@ async def create_subscription_payment(request: SubscriptionPaymentRequest,
 @app.post("/payment/cancel-subscription")
 async def cancel_subscription_endpoint(request: CancelSubscriptionRequest):
     try:
-        # Отправляем запрос на отмену подписки через сервис
         cancel_response = cancel_subscription(request.subscription_id)
 
         return cancel_response

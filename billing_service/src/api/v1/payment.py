@@ -12,7 +12,7 @@ from yookassa.domain.notification import (
 
 from src.db.postgres import get_session
 from src.extras.enums import Transaction_Status, Transaction_Type
-from src.models.payment import Transaction
+from src.models.payment import Transaction, FilmPurchase
 from src.schemas.payment import RequestPayment, RequestSubscription
 from src.services.notification_integration_service import send_notification
 from src.services.payment_service import (
@@ -117,15 +117,17 @@ async def webhook_handler(
         response_object = notification_object.object
 
         if notification_object.event == WebhookNotificationEventType.PAYMENT_SUCCEEDED:
+            transaction_id = UUID(response_object.metadata["transaction_id"])
             await payment_service.update_transaction_status(
-                transaction_id=UUID(response_object.metadata["transaction_id"]),
+                transaction_id=transaction_id,
                 status=Transaction_Status.succeeded,
                 session=session,
             )
-            if user_mail:=response_object.metadata.get("user_mail"):
+
+            if user_mail := response_object.metadata.get("user_mail"):
                 send_notification(user_mail)
-            if (response_object.metadata.get("subscription_id") and
-                    response_object.payment_method.saved):
+
+            if response_object.metadata.get("subscription_id") and response_object.payment_method.saved:
                 await payment_service.set_next_subscription(
                     user_id=UUID(response_object.metadata["user_id"]),
                     user_mail=response_object.metadata.get("user_mail"),
@@ -134,6 +136,18 @@ async def webhook_handler(
                     payment_method_id=response_object.payment_method.id,
                     session=session,
                 )
+
+            if movie_id := response_object.metadata.get("movie_id"):
+                film_purchase = FilmPurchase(
+                    id=uuid4(),
+                    transaction_id=transaction_id,
+                    user_id=UUID(response_object.metadata["user_id"]),
+                    movie_id=UUID(movie_id),
+                    created_at=response_object.captured_at,
+                )
+                session.add(film_purchase)
+                await session.commit()
+
         elif notification_object.event == WebhookNotificationEventType.PAYMENT_CANCELED:
             await payment_service.update_transaction_status(
                 transaction_id=UUID(response_object.metadata["transaction_id"]),
