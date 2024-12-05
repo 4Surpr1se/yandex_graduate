@@ -15,7 +15,6 @@ class AccessChecker:
             .where(
                 (FilmPurchase.user_id == user_id)
                 & (FilmPurchase.movie_id == film_id)
-                & (FilmPurchase.status == "completed")
             )
             .limit(1)
         )
