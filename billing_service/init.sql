@@ -12,6 +12,7 @@ CREATE TYPE discount_type AS ENUM ('percentage', 'fixed');
 CREATE TABLE user_subscriptions (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL,
+    user_mail VARCHAR NOT NULL,
     subscription_id UUID NOT NULL,
     status subscription_status NOT NULL,
     next_billing_date TIMESTAMP,

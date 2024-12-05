@@ -3,6 +3,7 @@ from fastapi import Depends, HTTPException, Request
 from jose import JWTError, jwt
 from config import settings
 
+
 # Извлечение токена из куков и декодирование
 def get_user_id_from_token(request: Request) -> str:
     access_token = request.cookies.get("access_token")
@@ -19,6 +20,18 @@ def get_user_id_from_token(request: Request) -> str:
         raise HTTPException(status_code=403, detail="Could not validate credentials")
 
 
+def get_user_mail_from_token(request: Request) -> str:
+    access_token = request.cookies.get("access_token")
+    if not access_token:
+        raise HTTPException(status_code=401, detail="No access token provided")
+    try:
+        payload = jwt.decode(access_token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
+        user_mail: str = payload.get("mail")
+        return user_mail
+    except JWTError:
+        raise HTTPException(status_code=403, detail="Could not validate credentials")
+
+
 # Получить стоимость фильма через price_service
 def get_film_price(country: str, film_id: str) -> dict:
     response = requests.post(
@@ -29,6 +42,7 @@ def get_film_price(country: str, film_id: str) -> dict:
         return response.json()  # Возвращаем данные о стоимости фильма
     else:
         raise Exception("Error getting film price")
+
 
 # Получить стоимость подписки через price_service
 def get_subscription_price(country: str, subscription_type: str) -> dict:
@@ -41,6 +55,7 @@ def get_subscription_price(country: str, subscription_type: str) -> dict:
     else:
         raise Exception("Error getting subscription price")
 
+
 # Инициализация платежа через billing_service
 def initiate_payment(payment_data: dict) -> dict:
     response = requests.post(
@@ -51,6 +66,7 @@ def initiate_payment(payment_data: dict) -> dict:
         return response.json()  # Возвращаем данные о платеже
     else:
         raise Exception("Error initiating payment")
+
 
 # Отмена подписки через billing_service
 def cancel_subscription(subscription_id: str) -> dict:

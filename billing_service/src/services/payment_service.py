@@ -46,7 +46,8 @@ class PaymentService:
                     "description": payment_data.description,
                     "metadata": {
                         "user_id": str(payment_data.user_id),
-                        "transaction_id": str(transaction.id)
+                        "transaction_id": str(transaction.id),
+                        "user_mail": str(payment_data.get("user_mail", '')),
                     },
                 }
             )
@@ -80,7 +81,8 @@ class PaymentService:
                 "metadata": {
                     "user_id": str(user_subscription.user_id),
                     "transaction_id": str(transaction.id),
-                    "subscription_id": str(user_subscription.subscription_id)
+                    "subscription_id": str(user_subscription.subscription_id),
+                    "user_mail": str(user_subscription.user_mail),
                 },
             })
 
@@ -118,11 +120,11 @@ class PaymentService:
                     "metadata": {
                         "user_id": str(payment_data.user_id),
                         "transaction_id": str(transaction.id),
-                        "subscription_id": str(subscription.id)
+                        "subscription_id": str(subscription.id),
+                        "user_mail": str(payment_data.get("user_mail", '')),
                     }
                 }
             )
-
             return await self.log_transaction(response, transaction, session)
         except ApiError as e:
             logger.error(f"YooKassa Error: {e}")
@@ -164,7 +166,7 @@ class PaymentService:
             await session.commit()
         await session.close()
 
-    async def set_next_subscription(self, user_id, subscription_id, captured_at,
+    async def set_next_subscription(self, user_id, user_mail, subscription_id, captured_at,
                                     payment_method_id, session):
         async with session.begin():
             result = await session.execute(
@@ -183,9 +185,9 @@ class PaymentService:
                     status=Subscription_Status.active,
                     payment_method_id=payment_method_id
                 )
-
+            if user_mail:
+                user_subscription.user_mail = user_mail
             user_subscription.next_billing_date = self._get_next_billing_date(captured_at)
-            user_subscription.payed = True
 
             session.add(user_subscription)
         await session.close()

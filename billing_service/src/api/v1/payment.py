@@ -14,11 +14,13 @@ from src.db.postgres import get_session
 from src.extras.enums import Transaction_Status, Transaction_Type
 from src.models.payment import Transaction
 from src.schemas.payment import RequestPayment, RequestSubscription
+from src.services.notification_integration_service import send_notification
 from src.services.payment_service import (
     PaymentService,
     get_ngrok_url,
     get_payment_service,
 )
+
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -120,11 +122,13 @@ async def webhook_handler(
                 status=Transaction_Status.succeeded,
                 session=session,
             )
-
+            if user_mail:=response_object.metadata.get("user_mail"):
+                send_notification(user_mail)
             if (response_object.metadata.get("subscription_id") and
                     response_object.payment_method.saved):
                 await payment_service.set_next_subscription(
                     user_id=UUID(response_object.metadata["user_id"]),
+                    user_mail=response_object.metadata.get("user_mail"),
                     subscription_id=UUID(response_object.metadata["subscription_id"]),
                     captured_at=response_object.captured_at,
                     payment_method_id=response_object.payment_method.id,
