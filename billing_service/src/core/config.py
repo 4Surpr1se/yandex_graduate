@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     notification_body: str = 'Payment successful'
     notification_service_url: str
 
+    auth_service_url: str
+
     class Config:
         env_file = '.env'
         extra = 'ignore'
