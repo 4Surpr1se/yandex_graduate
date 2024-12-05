@@ -26,12 +26,13 @@ def event_loop():
     yield loop
     loop.close()
     
-async def check_transaction_in_db(transaction_id, session):
+async def check_transaction_status_in_db(transaction_id, expected_status, session):
     async with session.begin():
         result = await session.execute(select(Transaction).filter_by(id=transaction_id))
         transaction = result.scalar_one_or_none()
         assert transaction is not None, "Транзакция не найдена в базе данных"
-        assert transaction.status == Transaction_Status.pending, "Статус транзакции неверен"
+        assert transaction.status == expected_status, f"Ожидаемый статус транзакции: {expected_status}, найден: {transaction.status}"
+
 
 
 async def check_transaction_subscription_in_db(user_id, subscription_id, session):
@@ -71,14 +72,14 @@ async def test_create_subscription():
 
             db_session = await get_session()
             try:
-                await check_transaction_in_db(transaction_id, db_session)
+                await check_transaction_status_in_db(transaction_id, Transaction_Status.pending, db_session)
                 await check_transaction_subscription_in_db(TEST_USER_ID, SUBSCRIPTION_ID, db_session)
             finally:
                 await db_session.close()
 
 
 @pytest.mark.asyncio
-async def test_create_payment_with_real_db():
+async def test_create_payment():
     """
     Тест для создания платежа с использованием API и проверки базы данных.
     """
@@ -101,7 +102,9 @@ async def test_create_payment_with_real_db():
 
             db_session = await get_session()
             try:
-                await check_transaction_in_db(transaction_id, db_session)
+                await check_transaction_status_in_db(transaction_id, Transaction_Status.pending, db_session)
             finally:
                 await db_session.close()
+                
+
 
