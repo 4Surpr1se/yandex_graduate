@@ -8,10 +8,8 @@ from sqlalchemy.future import select
 
 from models import Transaction, Transaction_Status
 from db import get_session
+from config import settings
 
-BASE_URL = "http://localhost:8009/api/v1/payment"
-TEST_USER_ID = "00000000-0000-0000-0000-000000000000"
-SUBSCRIPTION_ID = "3fa96813-00a0-45ff-b364-54b6c2242b04"  # monthly
 
 @pytest.fixture(scope="session")
 def event_loop():
@@ -54,8 +52,8 @@ async def test_create_subscription():
     Тест для создания подписки с использованием API и проверки базы данных.
     """
     payload = {
-        "user_id": TEST_USER_ID,
-        "subscription_id": SUBSCRIPTION_ID,
+        "user_id": settings.test_user_id,
+        "subscription_id": settings.subscription_id,
         "description": "Test subscription",
         "payment_method": "bank_card",
         "start_date": datetime.utcnow().isoformat(),
@@ -63,7 +61,7 @@ async def test_create_subscription():
     }
 
     async with aiohttp.ClientSession() as session:
-        async with session.post(f"{BASE_URL}/create-subscription", json=payload) as response:
+        async with session.post(f"{settings.billing_url}/create-subscription", json=payload) as response:
             assert response.status == 200, f"Ошибка при создании подписки: {response.text}"
 
             data = await response.json()
@@ -73,7 +71,7 @@ async def test_create_subscription():
             db_session = await get_session()
             try:
                 await check_transaction_status_in_db(transaction_id, Transaction_Status.pending, db_session)
-                await check_transaction_subscription_in_db(TEST_USER_ID, SUBSCRIPTION_ID, db_session)
+                await check_transaction_subscription_in_db(settings.test_user_id, settings.subscription_id, db_session)
             finally:
                 await db_session.close()
 
@@ -85,7 +83,7 @@ async def test_create_payment():
     """
     transaction_id = str(uuid4())
     payload = {
-        "user_id": TEST_USER_ID,
+        "user_id": settings.test_user_id,
         "amount": 50.0,
         "currency": "RUB",
         "description": "Test payment",
@@ -93,7 +91,7 @@ async def test_create_payment():
     }
 
     async with aiohttp.ClientSession() as session:
-        async with session.post(f"{BASE_URL}/create-payment", json=payload) as response:
+        async with session.post(f"{settings.billing_url}/create-payment", json=payload) as response:
             assert response.status == 200, f"Ошибка при создании платежа: {response.text}"
 
             data = await response.json()
