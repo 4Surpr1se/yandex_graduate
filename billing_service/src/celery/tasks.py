@@ -2,14 +2,14 @@ import asyncio
 import datetime
 import uuid
 
+from sqlalchemy.future import select  # Import select for async queries
 from sqlalchemy.orm import selectinload
 
 from src.celery.celery_config import app
 from src.db.postgres import get_session
 from src.extras.enums import Subscription_Status
-from src.models.payment import UserSubscription, Transaction
+from src.models.payment import Transaction, UserSubscription
 from src.services.payment_service import get_payment_service
-from sqlalchemy.future import select  # Import select for async queries
 
 
 @app.task
