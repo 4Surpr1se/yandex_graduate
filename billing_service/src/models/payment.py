@@ -1,9 +1,18 @@
-from sqlalchemy import TIMESTAMP, Column, Enum, Float, String, ForeignKey, UniqueConstraint, Boolean
+from sqlalchemy import (
+    TIMESTAMP,
+    Boolean,
+    Column,
+    Enum,
+    Float,
+    ForeignKey,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from src.db.postgres import Base
-from src.extras.enums import Transaction_Status, Transaction_Type, Subscription_Status
+from src.extras.enums import Subscription_Status, Transaction_Status, Transaction_Type
 
 
 class Subscription(Base):

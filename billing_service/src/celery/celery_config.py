@@ -1,4 +1,5 @@
 from datetime import timedelta
+
 from celery import Celery
 
 app = Celery('subscription_renewal', broker='redis://localhost:6379/0')

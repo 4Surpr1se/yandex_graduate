@@ -1,5 +1,7 @@
 import aiohttp
+
 from src.core.config import settings
+
 
 async def send_notification(user_mail: str):
     async with aiohttp.ClientSession() as session:

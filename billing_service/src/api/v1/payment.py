@@ -12,7 +12,7 @@ from yookassa.domain.notification import (
 
 from src.db.postgres import get_session
 from src.extras.enums import Transaction_Status, Transaction_Type
-from src.models.payment import Transaction, FilmPurchase
+from src.models.payment import FilmPurchase, Transaction
 from src.schemas.payment import RequestPayment, RequestSubscription
 from src.services.notification_integration_service import send_notification
 from src.services.payment_service import (
