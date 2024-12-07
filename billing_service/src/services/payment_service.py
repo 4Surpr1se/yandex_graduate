@@ -7,13 +7,14 @@ from dateutil import relativedelta
 import requests
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from yookassa import Configuration, Payment
+from yookassa import Configuration
 from yookassa.domain.exceptions import ApiError
 
 from src.core.config import settings
 from src.extras.enums import Transaction_Status, Subscription_Status
 from src.models.payment import Transaction, Subscription, UserSubscription
 from src.schemas.payment import RequestPayment
+from src.services.async_payment import AsyncPayment
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -30,7 +31,7 @@ class PaymentService:
         try:
             logger.info(f"Creating payment with amount: {payment_data.amount}, currency: {payment_data.currency}")
 
-            response = Payment.create(
+            response = await AsyncPayment.create(
                 {
                     "amount": {
                         "value": payment_data.amount,
@@ -71,7 +72,7 @@ class PaymentService:
             transaction.amount = amount
             transaction.currency = currency
 
-            response = Payment.create({
+            response = await AsyncPayment.create({
                 "amount": {
                     "value": amount,
                     "currency": currency
@@ -101,7 +102,7 @@ class PaymentService:
             transaction.subscription = subscription
             transaction.amount = subscription.base_price
             transaction.currency = subscription.base_currency
-            response = Payment.create(
+            response = await AsyncPayment.create(
                 {
                     "amount": {
                         "value": subscription.base_price,
@@ -218,11 +219,11 @@ class PaymentService:
 
     async def confirm_payment(self, payment_id: str, amount: dict = None):
         payload = {"amount": amount} if amount else {}
-        response = Payment.capture(payment_id, payload)
+        response = await AsyncPayment.capture(payment_id, payload)
         return response
 
     async def cancel_payment(self, payment_id: str):
-        response = Payment.cancel(payment_id)
+        response = await AsyncPayment.cancel(payment_id)
         return response
 
 
