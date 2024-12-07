@@ -125,7 +125,7 @@ async def webhook_handler(
             )
 
             if user_mail := response_object.metadata.get("user_mail"):
-                send_notification(user_mail)
+                await send_notification(user_mail)
             if ((user_id := response_object.metadata.get("user_id")) and
                     (subscription_id := response_object.metadata.get("subscription_id"))):
                 logger.info("auth_api call")
@@ -231,12 +231,12 @@ async def cancel_payment(
 @router.get('/ngrok-url')
 async def list_webhooks():
     try:
-        response = get_ngrok_url()
+        response = await get_ngrok_url()
         return {
             "ngrok-url": response,
         }
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Error getting url: {str(e)}"
+            detail=f"Error getting URL: {str(e)}"
         )

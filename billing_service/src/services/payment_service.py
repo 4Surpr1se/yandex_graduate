@@ -3,8 +3,8 @@ import uuid
 from datetime import datetime
 
 from dateutil import relativedelta
+import aiohttp
 
-import requests
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from yookassa import Configuration, Payment
@@ -226,17 +226,19 @@ class PaymentService:
         return response
 
 
-def get_ngrok_url():
+async def get_ngrok_url():
     try:
         logger.info("Retrieving ngrok URL")
-        response = requests.get(f"http://{settings.ngrok_host}:{settings.ngrok_port}/api/tunnels")
-        response.raise_for_status()
-        tunnels = response.json().get("tunnels", [])
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"http://{settings.ngrok_host}:{settings.ngrok_port}/api/tunnels") as response:
+                response.raise_for_status()
+                data = await response.json()
+                tunnels = data.get("tunnels", [])
 
-        for tunnel in tunnels:
-            if tunnel.get("proto") == "https":
-                logger.info(f"Ngrok URL retrieved: {tunnel.get('public_url')}")
-                return tunnel.get("public_url")
+                for tunnel in tunnels:
+                    if tunnel.get("proto") == "https":
+                        logger.info(f"Ngrok URL retrieved: {tunnel.get('public_url')}")
+                        return tunnel.get("public_url")
     except Exception as e:
         logger.error(f"Failed to retrieve ngrok URL: {e}")
         raise RuntimeError(f"Failed to retrieve ngrok URL: {e}")
